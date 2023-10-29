@@ -1,7 +1,7 @@
 ---
 title: "HW_3"
-author: "Andrew Plantinga"
-date: "2023-10-24"
+author: "Kat Aristi"
+date: "2023-10-29"
 output:
   html_document:
     code_folding: hide
@@ -26,11 +26,27 @@ This problem expands on the forest rotation problem presented in class.  Suppose
 Before you solve the problem for six rotations, find the optimal rotation when only one rotation is done.  What is the optimal value of $T_1$?
 
 ```{r}
+obj_fcn_t1 <- function(choice,a,b,c,p,discount){
+  
 
+  Q=exp(a-b/choice)
+  benefits = (p*Q*exp(-discount*choice)-c) #/(1-exp(-discount*choice)) if there are infinite rotations
+  
+  return(-benefits)
+  
+  }
 
 options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
 
+out_tree1a=nloptr(x0=10, #not sure if this is the correct x0
+          eval_f=obj_fcn_t1,
+          lb=0,
+          opts = options,
+          discount=1/1.05,a=10,b=53.27,c=250,p=1.5)
 
+
+
+print ( out_tree1a$solution )
 ```
 
 
@@ -41,15 +57,45 @@ Now solve the problem for six consecutive rotations.  What are the six rotation 
 <span style="color: blue;">**Solution**
 </span>
 
-
-
 ```{r}
+obj_fcn_t6 <- function(choice,a,b,c,p,discount){
+  
+  state <- vector(mode="numeric",length=0)
+  benefits <- vector(mode="numeric", length = 0)
+  
+   Q=exp(a-b/choice)
+  state[1] = choice[1]
+  benefits[1] = (-c + p * Q * exp(-discount*state[1]) - c * exp(-discount*state[1]) + p * Q * exp(-discount*state[1]) - c * exp(-discount*state[1]))
+  
+  
+  for (i in 2:6){
+     Q=exp(a-b/choice)
+  state[i] = choice[i] + state[i-1]
+  benefits[i] = (-c + p * Q * exp(-discount*state[i]) - c * exp(-discount*state[i]) + p * Q * exp(-discount*state[i]) - c * exp(-discount*state[i]))
+  
+  return(-benefits)
+    }
 
+  #choice = seq(from=0, time=6)
+  #Q=exp(a-b/choice)
+ #benefits = (p * Q * exp(-discount*choice) - c) / (1-exp(-discount/choice)) 
+  
+  #return(-benefits)
+  
+  }
 
 
 options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
 
+out_tree1b=nloptr(x0=10, #not sure if this is the correct x0
+          eval_f=obj_fcn_t6,
+          lb=0,
+          opts = options,
+          discount=1/1.05,a=10,b=53.27,c=250,p=1.5)
 
+
+
+print ( out_tree1b$solution )
 
 ```
 
