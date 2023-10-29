@@ -1,0 +1,206 @@
+---
+title: "ESM 242: HW 1"
+author: Kat Aristi
+output: 
+  html_document:
+    code_folding: hide
+date: '2023-10-10'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(nloptr)
+library(knitr)
+```
+
+
+## Question 1: Mining Reserve {.tabset}
+
+
+Suppose you own a mine with initial reserves $R_0$=1. You wish to determine the extraction rates, qt, that will maximize the sum of the present value of net benefits (PVNB) over a 10-year horizon t=0,1,…,9.  The net benefits from extraction are given by $\pi_t=c_0q_t+c_1q_t^2$ where $c_0$=0.8 and $c_1$=-0.1.  The discount rate is 0.05 and we’ll assume (at first) that any reserves left over in period 10 have a value of zero (i.e., $\lambda_0=0$). Find the extraction rates that maximize PVNB.  You will want to constrain extraction $q_t$ to be less than $R_t$ and for remaining reserves $R_{10}$ to be nonnegative.  
+
+### A. 
+
+What is the maximum PVNB with the initial set of parameters?
+
+<span style="color: blue;">**The maximum PVNB with the initial set of parameters is 0.737.**</span>
+
+
+
+```{r}
+# first define the objective function
+period=10
+obj_fcn_reserves <- function(choice,c0, c1, discount, int_state, lambda, period){
+#designate variables as vectors
+
+  state<-vector(mode="numeric",length=0)
+  benefits<-vector(mode="numeric",length=0)
+  
+  state[1] = int_state
+  benefits[1] = c0*choice[1]+c1*choice[1]^2
+
+  for(i in 2:10) {
+    
+    state[i] = state[i-1]-choice[i-1]
+    benefits[i] = c0*choice[i]+c1*choice[i]^2
+  
+   }
+  
+  #define the variables in the periods that r will recognize
+  state[period+1] = state[period]-choice[period]
+  benefits[period+1] = state[period+1]*lambda
+  
+  
+  t=seq(from=0, to=10) #sequence from from 0 to period (0-9)
+  pv=discount^t*benefits #discount benefits to get the present value of benefits 
+  npv=sum(pv) #sum all the present value of benefits
+  
+  return(-npv)
+  #return(data.frame(t=t,PV=pv,X=state,Y=benefits))
+
+}
+  
+
+#define constraint function
+constraint_func <- function(choice, c0, c1, discount, int_state, lambda, period) {
+ 
+  state<-vector(mode="numeric",length=0)
+  const<-vector(mode="numeric",length=0)
+  
+  state[1] = int_state
+  const[1] = choice[1]-state[1]
+  
+  for(i in 2:10) {
+    
+    state[i] = state[i-1]-choice[i-1]
+    const[i] = choice[i]-state[i]
+  }
+
+  return(const)
+  # return const. saying that const[i] is less than/equal to 0 or choice[i] is less than or equal to state[i]
+  
+}
+
+
+#Use these options with nloptr
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_hw1a = nloptr(
+  x0=rep(0.1, times=10), 
+  int_state=1,
+  eval_f = obj_fcn_reserves, 
+  eval_g_ineq = constraint_func,
+  lb=rep(0, times=10),
+  opts = options,
+  discount=1/1.05,
+  c0=0.8,
+  c1=-0.1,
+  lambda=0, period=10)
+
+
+#changed times=10 to 9
+print(out_hw1a$solution)
+
+round(-out_hw1a$objective, 3) 
+
+```
+
+
+### B.
+
+How does the PVNB change when you assume that reserves left over in period 10 have a per unit value of $\lambda_{10}$=1.2? How do the optimal values of $q_t$ compare to those in part a? Explain.
+
+<span style="color: blue;">**When lambda = 1.2, the PVNB increases from 0.737 to now being 0.748, which means the value of the reserves at year 10 have increased therefore suggesting that the value of the reserves in the final period has a significant impact on the overall net benefits. With a higher value of λ₁₀, it becomes more beneficial to conserve reserves for later periods, resulting in a higher overall PVNB. The optimal values of qt, or the extraction rate, are smaller when lambda, the value of the reserves increase. Smaller extraction rates imply that it is more advantageous to leave more reserves for future periods when the reserves have a higher value. **
+</span>
+
+```{r}
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_hw1b = nloptr(
+  x0=rep(0.1, times=10), 
+  int_state=1,
+  eval_f = obj_fcn_reserves, 
+  eval_g_ineq = constraint_func,
+  lb=rep(0, times=10),
+  opts = options,
+  discount=1/1.05,
+  c0=0.8,
+  c1=-0.1,
+  lambda=1.2, period=10)
+
+print(out_hw1b$solution)
+
+round(-out_hw1b$objective, 3)
+
+
+```
+
+
+### C.
+
+What is the PVNB when $\lambda_{10}=1.4$ How do the optimal values of $q_t$ compare to those in part a? Explain.
+
+<span style="color: blue;">**Similarly to what occurred in part b, the PVNB increased when the value of lambda increased. When lambda = 1.4, the PVNB is 0.859, compared to part a which was 0.737 when lambda = 0. This indicates a similar trend as that was  explained in part b for the PVNB value. The qt, or extraction rates, become even smaller numbers when lambda = 1.4. This indicates that when value is high on the later reserves, it is more beneficial to conserve these reserves rather then harvest them. Higher reserve values in the final period encourage a more conservative approach, leading to smaller extraction rates and higher PVNB.**
+</span>
+```{r}
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_hw1c = nloptr(
+  x0=rep(0.1, times=10), 
+  int_state=1,
+  eval_f = obj_fcn_reserves, 
+  eval_g_ineq = constraint_func,
+  lb=rep(0, times=10),
+  opts = options,
+  discount=1/1.05,
+  c0=0.8,
+  c1=-0.1,
+  lambda=1.4, period=10)
+
+print(out_hw1c$solution)
+
+round(-out_hw1c$objective, 3)
+```
+
+
+
+### D.
+
+Even without using R, you could reason that the PVNB must be at least as large in parts b and c compared to part a. Explain.
+
+<span style="color: blue;">**The reason why PVNB is larger in parts b and c then part a because it would be expected that the longer a reserve is conserved or unharvested, the more valuable the materials in it will become. This can be due to a variety of factors, such as more material is able to develop in the reserve since it is untouched. It could also be due to the material in the reserve becoming more valuable as other reserves are harvested. **
+</span>
+
+### E.
+
+Now set $\lambda_{10}$ back to 0 and set $c_1$=0. Resolve and explain what happens to the optimal values of $q_t$ compare to those in part a. 
+
+<span style="color: blue;">**In part a, c1 being set to -0.1 indicates that costs very little to harvest early on but there is some benefit is conserving the reserves for harvest much later down the line. In part e, when c1 is changed to 0 and lambda becomes 0, it is costing nothing to harvest early on and places more emphasis on harvesting early on, rather than waiting. This is also exemplified by the increase in qt, or extracting rates, meaning that it is more beneficial to extract from the mines now rather then waiting to do so. **
+</span>
+
+```{r}
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_hw1e = nloptr(
+  x0=rep(0.1, times=10), 
+  int_state=1,
+  eval_f = obj_fcn_reserves, 
+  eval_g_ineq = constraint_func,
+  lb=rep(0, times=10),
+  opts = options,
+  discount=1/1.05,
+  c0=0.8,
+  c1=0,
+  lambda=0, period=10)
+
+print(out_hw1e$solution)
+
+round(-out_hw1e$objective, 3)
+```
+
+

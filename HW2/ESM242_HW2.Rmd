@@ -1,0 +1,324 @@
+---
+title: "ESM 242 HW 2"
+author: "Kat Aristi"
+date: '2023-10-25'
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(nloptr)
+library(knitr)
+
+```
+
+## Question 1: Optimal fishery {.tabset}
+
+This question examines the optimal management of a fishery. The stock dynamics are given by:
+
+```{=tex}
+\begin{equation}
+X_{t+1} = X_{t} + F(X_{t}) - Y_{t}
+\end{equation}
+```
+where $F(X_{t})=rX_{t}(1-X_{t}/K)$ and $Y_t=qX_t E_t$. Profits in each year are given by $\pi_t=pY_t-cE_t^2$. Parameters values are given by:
+
+```{=tex}
+\begin{equation}
+\begin{aligned}
+r& & 0.1\\
+K& & 1 \\
+q& & 0.01 \\
+p& & 500 \\
+c& & .01 \\
+\delta& &0.05
+\end{aligned}
+\end{equation}
+```
+Assume the fishery manager chooses effort to maximize the present discounted value of profits over 50 periods, t=0,1,...,49. Make sure to constrain the solution so that the amount of harvest $Y_{t}$ does not exceed the stock $X_{t}$ in any period.
+
+### A.
+
+What is the solution when the initial stock is 0.5? Create a table that shows effort and stock in each period. See fishery model in R_examples_1.Rmd for how to create a basic table from the nloptr output.
+
+[**PV of Profits = 177.356**]{style="color: blue;"}
+
+```{r}
+# start with defining the objective func
+period = 50
+fishery_obj_func <- function(choice, int_state, discount, r, K, q, p, c){
+  
+  state<-vector(mode="numeric",length=0)
+  benefits<-vector(mode="numeric",length=0)
+  
+  state[1] = int_state
+  benefits[1]=p*(q*state[1]*choice[1])-c*choice[1]^2
+    
+  for(i in 2:(period)) {
+    
+    Func=r*state[i-1]*(1-state[i-1]/K)
+    state[i]=state[i-1]+Func-(q*state[i-1]*choice[i-1])
+    benefits[i]=p*(q*state[i]*choice[i])-c*choice[i]^2
+    
+  } 
+  
+ t=seq(from=0, period-1) 
+  pv=discount^t*benefits #discount benefits to get the present value of benefits 
+  npv=sum(pv)
+  return(-npv)
+  
+}
+  
+constraint_fishery_func <- function(choice, int_state, discount, r, K, q, p, c){
+  
+  state<-vector(mode="numeric",length=0)
+  const<-vector(mode="numeric",length=0)
+  
+  state[1] = int_state
+  const[1] = q*state[1]*choice[1]-state[1]
+  
+  for(i in 2:(period)) {
+    
+    Func=r*state[i-1]*(1-state[i-1]/K)
+    state[i] = state[i-1]+Func-(q*state[i-1]*choice[i-1])
+    const[i] = q*state[i]*choice[i]-state[i]  
+  }
+  
+  return(const)
+}
+
+
+## Use this options list for nloptr
+
+local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
+options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
+
+out_hw1a = nloptr(
+  x0 = rep(1, period),
+  opts = options,
+  int_state = 0.5, 
+  eval_f = fishery_obj_func, 
+  eval_g_ineq = constraint_fishery_func, 
+  lb = rep(0, period),
+  discount = 1/1.05, 
+  r = 0.1, 
+  K = 1, 
+  q = 0.01, 
+  p = 500, 
+  c = .01)
+
+#print(out_hw1a$solution)
+#this is the effort and stock
+
+#round(-out_hw1a$objective, 3)
+#this is the PVNB
+```
+
+```{r}
+#trying to make a table 
+
+stock<-function(choice,q=0.01,int_state=0.5,p=500,c=0.01,r=0.1,K=1,discount=1/1.05,period=50){
+  
+  #make storage vectors
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
+  
+  state[1]=int_state
+  benefits[1]=p*q*state[1]*choice[1]-c*choice[1]^2
+  
+  
+  for(i in 2:length(choice)){
+    
+# Add the stock dynamics
+    
+  Func=r*state[i-1]*(1-state[i-1]/K)
+    state[i]=state[i-1]+Func-(q*state[i-1]-q*state[i-1]*choice[i-1])
+    benefits[i]=p*(q*state[i]*choice[i])-c*choice[i]^2
+             
+  }
+  
+  #define period and discount
+  t <- seq(from=0,period)
+  
+  pv <- discount^t*benefits
+  
+  npv <- sum(pv)
+
+# This time we return a data frame with the variables we want in the table.  The value after the = indicates the column label.
+  
+  return(data.frame("Period"=t, "PV"=pv, "Stock"=state, "Effort"=choice))  
+
+}
+
+# The next command is telling R to use the solution found above, choice, to evaluate the function stock and to round the values in the data frame to two places past the decimal point.  The second command says to make a table with these values. 
+out_hw1a$solution[51] = NA
+
+tbl_1a=round(stock(out_hw1a$solution),2)      #  2 indicates rounding
+
+
+kable(tbl_1a)
+
+
+```
+
+### B.
+
+What is the solution when the initial stock is 0.1? Create a table that shows effort and stock in each period.
+
+[**PV of Profits =  69.307**]{style="color: blue;"}
+
+```{r}
+local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
+options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
+
+out_hw1b = nloptr(
+  x0 = rep(1, period),
+  opts = options,
+  int_state = 0.1, 
+  eval_f = fishery_obj_func, 
+  eval_g_ineq = constraint_fishery_func, 
+  lb = rep(0, period),
+  discount = 1/1.05, 
+  r = 0.1, 
+  K = 1, 
+  q = 0.01, 
+  p = 500, 
+  c = .01)
+
+#print(out_hw1b$solution)
+#this is the effort and stock
+
+#round(-out_hw1b$objective, 3)
+```
+```{r}
+#table 
+stock1b<-function(choice,q=0.01,int_state=0.1,p=500,c=0.01,r=0.1,K=1,discount=1/1.05,period=50){
+  
+  #make storage vectors
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
+  
+  state[1]=int_state
+  benefits[1]=p*q*state[1]*choice[1]-c*choice[1]^2
+  
+  
+  for(i in 2:length(choice)){
+    
+# Add the stock dynamics
+    
+  Func=r*state[i-1]*(1-state[i-1]/K)
+    state[i]=state[i-1]+Func-(q*state[i-1]-q*state[i-1]*choice[i-1])
+    benefits[i]=p*(q*state[i]*choice[i])-c*choice[i]^2
+             
+  }
+  
+  #define period and discount
+  t <- seq(from=0,period)
+  
+  pv <- discount^t*benefits
+  
+  npv <- sum(pv)
+
+# This time we return a data frame with the variables we want in the table.  The value after the = indicates the column label.
+  
+  return(data.frame("Period"=t, "PV"=pv, "Stock"=state, "Effort"=choice))  
+
+}
+
+# The next command is telling R to use the solution found above, choice, to evaluate the function stock and to round the values in the data frame to two places past the decimal point.  The second command says to make a table with these values. 
+out_hw1b$solution[51] = NA
+
+tbl_1b=round(stock1b(out_hw1b$solution),2)      #  2 indicates rounding
+
+
+kable(tbl_1b)
+```
+
+### C.
+
+What is the solution when the initial stock is 0.9? Create a table that shows effort and stock in each period
+
+[**PV of Profits =  253.6**]{style="color: blue;"}
+
+```{r}
+local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
+options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
+
+out_hw1c = nloptr(
+  x0 = rep(1, period),
+  opts = options,
+  int_state = 0.9, 
+  eval_f = fishery_obj_func, 
+  eval_g_ineq = constraint_fishery_func, 
+  lb = rep(0, period),
+  discount = 1/1.05, 
+  r = 0.1, 
+  K = 1, 
+  q = 0.01, 
+  p = 500, 
+  c = .01)
+
+#print(out_hw1c$solution)
+#this is the effort and stock
+
+#round(-out_hw1c$objective, 3)
+```
+```{r}
+#table 
+stock1c<-function(choice,q=0.01,int_state=0.9,p=500,c=0.01,r=0.1,K=1,discount=1/1.05,period=50){
+  
+  #make storage vectors
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
+  
+  state[1]=int_state
+  benefits[1]=p*q*state[1]*choice[1]-c*choice[1]^2
+  
+  
+  for(i in 2:length(choice)){
+    
+# Add the stock dynamics
+    
+  Func=r*state[i-1]*(1-state[i-1]/K)
+    state[i]=state[i-1]+Func-(q*state[i-1]-q*state[i-1]*choice[i-1])
+    benefits[i]=p*(q*state[i]*choice[i])-c*choice[i]^2
+             
+  }
+  
+  #define period and discount
+  t <- seq(from=0,period)
+  
+  pv <- discount^t*benefits
+  
+  npv <- sum(pv)
+
+# This time we return a data frame with the variables we want in the table.  The value after the = indicates the column label.
+  
+  return(data.frame("Period"=t, "PV"=pv, "Stock"=state, "Effort"=choice))  
+
+}
+
+# The next command is telling R to use the solution found above, choice, to evaluate the function stock and to round the values in the data frame to two places past the decimal point.  The second command says to make a table with these values. 
+out_hw1c$solution[51] = NA
+
+tbl_1c=round(stock1c(out_hw1c$solution),2)      #  2 indicates rounding
+
+
+kable(tbl_1c)
+```
+
+### D.
+
+Compare the stock in the last period across the three solutions. What do you notice? Can you explain the pattern in terms of the fundamental equation of renewable resources?
+
+[**When the initial value of stock, or stock in period 0, is increased, the stock is starting at a higher rate and therefore increasing based off that initial stock value number. For example, when the initial stock value is set at 0.5 in 1A, the stock starts and 0.5 and increases from there. This causes the stock in the last period in 1A being 1.09 (initial value = 0.5), in 1B being 1.16 (initial value = 0.1), and in 1C being 1.10 (initial value = 0.9). When stock reaches a certain threshold, effort dynamics change. As stock increases, effort also increases until it reaches a stock value of 1, or carrying capacity which is denoted as K in the fundamental equation of renewable resources. This also influences the growth function or F(X) in the fundamental equation. When the fishery reaches carrying capacity, effort decreases and profits are high because fishermen do not have to work as hard to catch fish. This occurs until the fishery stock begins to decrease due the high amount of fishing, then causing effort to increase (since there are less fish) and profits to also decrease. This recycling trend can be seen across all three of the solutions but occurs at different periods due to what the initial value of the stock is set at. In 1A when initial value is 0.5, the fishery hits carrying capacity at period 13. In 1B, initial value is decreased to 0.1, resulting it taking until period 32 for the fishery to reach carrying capacity. In 1C initial value is increased to 0.9 causing the fishery to reach carrying capacity earlier on, specifically in period 3. When these fisheries reach their final period, the stock values vary due to the changes of effort and growth.**]{style="color: blue;"}
+
+### E.
+
+Compare the value of the objective function (i.e., the present value of profits) across the three solutions. Explain the differences.
+
+[**In 1A, the PV of profits is 177.356 when initial value is 0.5. In 1B, the PV of profits is 69.307 when initial value is 0.1. In 1C, the PV of profits is 253.6 when initial value is 0.9. When initial stock value is changed, these differences in the PV of profit occurs because the fishery is able to earn a higher profit when the initial value is set at a higher value in period 0. This means that when the stock starts at a high initial value, such as 0.9, the stock is already earning a high profit at the first period. As the stock grows, it is able to remain large and reach carrying capacity at a faster rate then a stock that starts at 0.1, and is, therefore, able to maintain a high profit throughout its 50 periods. When the stock starts at 0.1 in 1B, the present value of profits in each period is low because the stock is so small. It takes longer for the stock to build, due to high effort, and therefore a longer time for the fishermen to earn a high amount of profits. **]{style="color: blue;"}

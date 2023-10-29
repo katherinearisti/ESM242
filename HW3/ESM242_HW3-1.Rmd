@@ -1,0 +1,166 @@
+---
+title: "HW_3"
+author: "Andrew Plantinga"
+date: "2023-10-24"
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(nloptr)
+library(knitr)
+```
+
+## Question 1: Forestry Rotation {.tabset}
+
+This problem expands on the forest rotation problem presented in class.  Suppose that a stand of trees is planted in time 0 at a cost of c, grown for $T_1$ years, harvested, replanted at cost c, grown for $T_2$ years, harvested, replanted, and so on.  If we complete six rotations, what should be the values of $T_1$, $T_2$, $T_3$, $T_4$, $T_5$, and $T_6$?  Assume that different values can be chosen for each year and that the stand does not need to be replanted after the sixth harvest.  Use the parameter values a=10, b=53.27, c=250, p=1.5, and $\delta$=0.05.
+
+### A.
+
+Before you solve the problem for six rotations, find the optimal rotation when only one rotation is done.  What is the optimal value of $T_1$?
+
+```{r}
+
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+
+
+```
+
+
+### B. 
+
+Now solve the problem for six consecutive rotations.  What are the six rotation lengths that you found?
+
+<span style="color: blue;">**Solution**
+</span>
+
+
+
+```{r}
+
+
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+
+
+
+```
+
+
+
+### C.
+
+Explain why $T_1$ through $T_5$ are shorter than $T_6$?
+
+<span style="color: blue;">**Solution**
+</span>
+
+<span style="color: blue;">
+
+</span>
+
+### D.
+
+What happens to $T_1$ through $T_5$ when the cost of replanting the stand increases to 500? Explain. Why doesn't $T_6$ change with the higher replanting cost?
+
+
+```{r}
+
+## Call the same nloptr from part B but with a different planting cost
+
+```
+
+<span style="color: blue;">**Solution**
+</span>
+
+<span style="color: blue;">
+
+
+</span>
+
+```{r}
+
+
+```
+
+
+### E.
+
+Compare your answer to part a (the single rotation) to $T_6$. Why are they the same?
+
+<span style="color: blue;">**Solution**
+</span>
+
+<span style="color: blue;">
+
+
+</span>
+
+
+### F
+
+Now solve for the optimal rotation when an infinite number of rotations are done.  Compute the present value of net revenues (i.e., $objective).  Compare this to the present value of net revenues when only six rotations are done.  Are they close in magnitude?  Why?
+
+
+
+## Question 2: Varying Initial Age {.tabset}
+
+In this problem, you are asked to find the optimal rotation when the initial age of the stand is not zero.  The key question is whether a positive initial age should change the solution.  That is, if T* is the optimal rotation age for a stand starting at age 0, will it still be the same optimal rotation age for a stand starting at age $A$>0?  The volume of timber evolves according to $Q(T)=e^{a-b/T}$  where a=13, b=185, and T is the age of the trees. The price of timber is p=1.78 and the cost of planting the stand at the start of each rotation is 1000.  The discount rate is $\delta$=0.05.  
+
+### A.
+	
+If the stand is grown for an infinite number of rotations, what is the optimal rotation length when the initial age of the stand is zero?  Call this value $T^*$.  What is the present discounted value of net timber revenues from an infinite number of rotations?  Call this value $\pi_\infty$.
+
+<span style="color: blue;">**Solution**</span>
+
+
+
+```{r}
+
+
+#Use this options list
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+
+```
+
+
+
+### B.
+
+Suppose that the initial age of the stand is A and $T_1$ is the additional number of years the stand is grown until harvest.  Then, $A+T_1$ is the age of the stand at the end of the first rotation. Assuming the first rotation is followed by an infinite number of rotations, write an expression for present discounted value of net timber revenues from an infinite number of rotations (including the first one).
+
+<span style="color: blue;">**Solution**</span>
+
+
+
+### C.
+
+Using your formula in b, and assuming A=30, what is the optimal value of $T_1$? How does your answer change when A=40?  A=60.14?  A=90?  Make a table showing your results.
+
+<span style="color: blue;">**Solution**</span>
+
+
+
+```{r}
+
+
+```
+
+### D.
+
+What do you notice about $A+T_1$?  Explain.
+
+<span style="color: blue;">**Solution**</span>
+
+
+
+
+

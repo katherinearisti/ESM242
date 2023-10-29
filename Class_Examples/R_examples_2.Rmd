@@ -1,0 +1,111 @@
+---
+title: "Forestry examples for ESM 242"
+author: "Andrew Plantinga"
+output: 
+  html_document:
+    code_folding: hide
+date: '2022-06-18'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(nloptr)
+library(knitr)
+```
+
+
+
+## Example 1: An optimal number of rotations {.tabset}
+
+
+We seek to select the optimal harvest age T* for an even-aged forest to maximize the present discount value of profits from an infinite number of rotations.  The timber yield is given by $Q(T)=e^{a-b/T}$, where $a=10, b=53.27$, the cost of planting the stand is $c=300$, the price of a unit of timber is $p=1$, and the discount rate is $\delta=0.05$.  Thus, we choose $T^*$ to maximize $PNVB(T^*)=\frac{pQ(T^*)e^{-\delta T^*} - c}{1-e^{-\delta T^*}}$ where $T^* \gt 0$.
+
+
+### A. 
+
+What is the optimal rotation $T^*$?
+
+<span style="color: blue;">**Solution**</span>
+
+
+<span style="color: blue;">Build optimization problem through an objective function and constraint ensuring that harvest age $T^*$ is strictly positive</span>
+
+```{r}
+
+
+obj_fcn_tree1<-function(choice,a,b,c,p,discount){
+  
+
+  Q=exp(a-b/choice)
+  benefits = (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
+  
+  return(-benefits)
+  
+  
+}
+
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+
+
+
+out_tree1=nloptr(x0=10,
+          eval_f=obj_fcn_tree1,
+          lb=0,
+          opts = options,
+          discount=0.03,a=10,b=53.27,c=300,p=1)
+
+
+
+print ( out_tree1$solution )
+
+
+
+```
+
+
+
+## Example 2: Optimal single rotation with benefits from the standing stock
+
+This problem has the same set up as example 1, but the stand will be grown for just one rotation and there will be positive benefits from the standing stock (e.g., wildlife habitat).  If the benefits in period $t$ from the standing stock are $B(t)=A(1-e^{-\alpha t})$, then the present value of cumulative benefits from time 0 to time $T$ are given by $PVB(T)=\frac{A}{\delta}[1-e^{-\delta T}]+\frac{A}{\alpha+\delta}[1-e^{-(\alpha+\delta)T}]$.  Assume $A=500$ and $\alpha=0.03$. The optimal rotation length $T^*$ is found with the code below.
+
+```{r}
+
+
+obj_fcn_tree2<-function(choice,a,b,c,p,discount,A,alpha){
+  
+
+  Q=exp(a-b/choice)
+  timberbenefits = p*Q*exp(-discount*choice)-c
+  stockbenefits = (A/discount)*(1-exp(-discount*choice))-(A/(alpha+discount))*(1-exp(-(alpha+discount)*choice))
+  benefits=timberbenefits+stockbenefits  
+    
+    
+  return(-benefits)
+  
+#if the stock itself has value then it has longer rotations  
+}
+
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+
+
+
+out_tree2=nloptr(x0=30,
+          eval_f=obj_fcn_tree2,
+          lb=0,
+          opts = options,
+          discount=0.05,a=10,b=53.27,c=300,p=1,A=500,alpha=0.03)
+
+
+
+print ( out_tree2$solution )
+
+
+
+```
+
