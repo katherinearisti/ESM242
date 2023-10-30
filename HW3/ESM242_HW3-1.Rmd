@@ -58,6 +58,8 @@ Now solve the problem for six consecutive rotations.  What are the six rotation 
 </span>
 
 ```{r}
+period = 6
+
 obj_fcn_t6 <- function(choice,a,b,c,p,discount){
   
   state <- vector(mode="numeric",length=0)
@@ -65,37 +67,36 @@ obj_fcn_t6 <- function(choice,a,b,c,p,discount){
   
    Q=exp(a-b/choice)
   state[1] = choice[1]
-  benefits[1] = (-c + p * Q * exp(-discount*state[1]) - c * exp(-discount*state[1]) + p * Q * exp(-discount*state[1]) - c * exp(-discount*state[1]))
+  benefits[1] = (-c + p * Q * exp(-discount * state[1]) - c * exp(-discount * state[1]))
   
   
-  for (i in 2:6){
+  for (i in 2:(period)){
      Q=exp(a-b/choice)
   state[i] = choice[i] + state[i-1]
-  benefits[i] = (-c + p * Q * exp(-discount*state[i]) - c * exp(-discount*state[i]) + p * Q * exp(-discount*state[i]) - c * exp(-discount*state[i]))
+  benefits[i] = (-c + p * Q * exp(-discount*state[i]) - c * exp(-discount*state[i]))
   
-  return(-benefits)
     }
 
-  #choice = seq(from=0, time=6)
-  #Q=exp(a-b/choice)
- #benefits = (p * Q * exp(-discount*choice) - c) / (1-exp(-discount/choice)) 
-  
-  #return(-benefits)
+  t = seq(from=0, time=period)
+  pv = (-c + p * Q * exp(-discount*t) - c * exp(-discount*t))
+  npv=sum(pv)
+  return(-npv)
   
   }
 
 
 options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
 
-out_tree1b=nloptr(x0=10, #not sure if this is the correct x0
+out_tree1b=nloptr(x0=rep(10, period), #not sure if this is the correct x0
           eval_f=obj_fcn_t6,
-          lb=0,
+          lb=rep(0, period),
           opts = options,
           discount=1/1.05,a=10,b=53.27,c=250,p=1.5)
 
 
 
 print ( out_tree1b$solution )
+print(-out_tree1b$objective)
 
 ```
 
