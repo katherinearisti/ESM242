@@ -211,7 +211,7 @@ If the stand is grown for an infinite number of rotations, what is the optimal r
 
 obj_fcn_t_infinite2 <- function(choice,a,b,c,p,discount){
 
-  choice = 0 #idk if this is right, if write this outside of the function then get different numbers
+  #choice = 0 idk if this is right, if write this outside of the function then get different numbers
   Q=exp(a-b/choice)
   benefits = (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
@@ -241,6 +241,30 @@ print(-out_tree2a$objective)
 Suppose that the initial age of the stand is A and $T_1$ is the additional number of years the stand is grown until harvest.  Then, $A+T_1$ is the age of the stand at the end of the first rotation. Assuming the first rotation is followed by an infinite number of rotations, write an expression for present discounted value of net timber revenues from an infinite number of rotations (including the first one).
 
 <span style="color: blue;">**Solution**</span>
+```{r}
+obj_fcn_1_infinite <- function(choice,A,a,b,c,p,discount){
+  
+   Q=(exp(a-b/choice)) + A
+  benefits = (p*Q*exp(-discount*choice)-c +   (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))*exp(-discount * choice))
+  
+  return(-benefits)
+}
+
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_tree2b=nloptr(x0=10, #not sure if this is the correct x0
+          eval_f=obj_fcn_1_infinite,
+          lb=0,
+          opts = options,
+          discount=0.05,a=13,b=185,c=1000,p=1.78,A=0)
+
+
+
+print (round( out_tree2b$solution, 3 ))
+print(-out_tree2b$objective)
+
+```
 
 
 
@@ -254,6 +278,19 @@ Using your formula in b, and assuming A=30, what is the optimal value of $T_1$? 
 
 ```{r}
 
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_tree2c=nloptr(x0=10, #not sure if this is the correct x0
+          eval_f=obj_fcn_1_infinite,
+          lb=0,
+          opts = options,
+          discount=0.05,a=13,b=185,c=1000,p=1.78,A=30)
+
+
+
+print (round( out_tree2c$solution, 3 ))
+print(-out_tree2c$objective)
 
 ```
 
