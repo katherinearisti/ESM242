@@ -67,19 +67,20 @@ obj_fcn_t6 <- function(choice,a,b,c,p,discount){
   
    Q=exp(a-b/choice[1])
   state[1] = choice[1]
-  benefits[1] = (p * Q * exp(-discount * state[1]) - c * exp(-discount * state[1])) #in class had a -c in front of p
+  benefits[1] = (p * Q * exp(-discount * state[1])-c) 
+  #- c * exp(-discount * state[1])) #in class had a -c in front of p
   
   
   for (i in 2:(period)){
      Q=exp(a-b/choice[i])
   state[i] = choice[i] + state[i-1]
-  benefits[i] = (p * Q * exp(-discount*state[i]) - c * exp(-discount*state[i]))
+  benefits[i] = (p * Q * exp(-discount*state[i]) - c * exp(-discount*state[i-1]))
   
     }
 
-  t = seq(from=0, time=period)
-  pv = (p * Q * exp(-discount*t) - c * exp(-discount*t))
-  npv=sum(pv)
+  #t = seq(from=0, time=period)
+  #pv = (p * Q * exp(-discount*t) - c * exp(-discount*t))
+  npv=sum(benefits)
   return(-npv)
   
   }
@@ -135,8 +136,6 @@ out_tree1d=nloptr(x0=rep(10, period), #not sure if this is the correct x0
 print ( round(out_tree1d$solution, 3) )
 print(-out_tree1d$objective)
 
-
-#why am I getting the same numbers
 ```
 
 <span style="color: blue;">**Solution**
@@ -211,10 +210,9 @@ If the stand is grown for an infinite number of rotations, what is the optimal r
 
 ```{r}
 
-obj_fcn_t_infinite2 <- function(choice,a,b,c,p,discount){
+obj_fcn_t_infinite2 <- function(choice,A,a,b,c,p,discount){
 
-  #choice = 0 #idk if this is right, if write this outside of the function then get different numbers
-  Q=exp(a-b/choice)
+  Q=(exp(a-b/(A + choice))) 
   benefits = (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
   return(-benefits)
@@ -224,11 +222,11 @@ obj_fcn_t_infinite2 <- function(choice,a,b,c,p,discount){
 #Use this options list
 options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
 
-out_tree2a=nloptr(x0=0,
+out_tree2a=nloptr(x0=10,
           eval_f=obj_fcn_t_infinite2,
           lb=0,
           opts = options,
-          discount=0.05,a=13,b=185,c=1000,p=1.78)
+          discount=0.05,a=13,b=185,c=1000,p=1.78, A=0)
 
 
 
@@ -244,27 +242,14 @@ Suppose that the initial age of the stand is A and $T_1$ is the additional numbe
 
 <span style="color: blue;">**Solution**</span>
 ```{r}
-obj_fcn_1_infinite <- function(choice,A,a,b,c,p,discount){
+obj_fcn_npv <- function(choice,A,a,b,c,p,discount){
   
-   Q=(exp(a-b/choice)) + A
-  benefits = (p*Q*exp(-discount*choice)-c +   (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))*exp(-discount * choice))
+  Q=(exp(a-b/(A + choice)))
+  npv = (p*Q*exp(-discount*choice) + 60.13825 * exp(-discount * choice))
   
-  return(-benefits)
+  return(-npv)
+  
 }
-
-
-options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
-
-out_tree2b=nloptr(x0=10, #not sure if this is the correct x0
-          eval_f=obj_fcn_1_infinite,
-          lb=0,
-          opts = options,
-          discount=0.05,a=13,b=185,c=1000,p=1.78,A=0)
-
-
-
-print (round( out_tree2b$solution, 3 ))
-print(-out_tree2b$objective)
 
 ```
 
@@ -279,12 +264,10 @@ Using your formula in b, and assuming A=30, what is the optimal value of $T_1$? 
 
 
 ```{r}
-
-
 options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
 
 out_tree2c=nloptr(x0=10, #not sure if this is the correct x0
-          eval_f=obj_fcn_1_infinite,
+          eval_f=obj_fcn_npv,
           lb=0,
           opts = options,
           discount=0.05,a=13,b=185,c=1000,p=1.78,A=30)
