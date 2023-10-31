@@ -67,18 +67,18 @@ obj_fcn_t6 <- function(choice,a,b,c,p,discount){
   
    Q=exp(a-b/choice)
   state[1] = choice[1]
-  benefits[1] = (-c + p * Q * exp(-discount * state[1]) - c * exp(-discount * state[1]))
+  benefits[1] = (p * Q * exp(-discount * state[1]) - c * exp(-discount * state[1])) #in class had a -c in front of p
   
   
   for (i in 2:(period)){
-     Q=exp(a-b/choice)
+     Q=exp(a-b/choice[i])
   state[i] = choice[i] + state[i-1]
-  benefits[i] = (-c + p * Q * exp(-discount*state[i]) - c * exp(-discount*state[i]))
+  benefits[i] = (p * Q * exp(-discount*state[i]) - c * exp(-discount*state[i]))
   
     }
 
   t = seq(from=0, time=period)
-  pv = (-c + p * Q * exp(-discount*t) - c * exp(-discount*t))
+  pv = (p * Q * exp(-discount*t) - c * exp(-discount*t))
   npv=sum(pv)
   return(-npv)
   
