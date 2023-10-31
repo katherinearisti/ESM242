@@ -42,7 +42,7 @@ out_tree1a=nloptr(x0=10, #not sure if this is the correct x0
           eval_f=obj_fcn_t1,
           lb=0,
           opts = options,
-          discount=0.05,a=10,b=53.27,c=250,p=1.5)
+          discount=0.05,a=10,b=53.27,c=250,p=1.5) #which discount value should I use 
 
 
 
@@ -191,6 +191,8 @@ out_tree1f=nloptr(x0=10, #not sure if this is the correct x0
 
 print (round( out_tree1f$solution, 3 ))
 print(-out_tree1f$objective)
+
+#do you need a loop??
 ```
 
 
@@ -211,7 +213,7 @@ If the stand is grown for an infinite number of rotations, what is the optimal r
 
 obj_fcn_t_infinite2 <- function(choice,a,b,c,p,discount){
 
-  #choice = 0 idk if this is right, if write this outside of the function then get different numbers
+  #choice = 0 #idk if this is right, if write this outside of the function then get different numbers
   Q=exp(a-b/choice)
   benefits = (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
@@ -222,7 +224,7 @@ obj_fcn_t_infinite2 <- function(choice,a,b,c,p,discount){
 #Use this options list
 options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
 
-out_tree2a=nloptr(x0=10,
+out_tree2a=nloptr(x0=0,
           eval_f=obj_fcn_t_infinite2,
           lb=0,
           opts = options,
