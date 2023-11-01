@@ -25,6 +25,10 @@ This problem expands on the forest rotation problem presented in class.  Suppose
 
 Before you solve the problem for six rotations, find the optimal rotation when only one rotation is done.  What is the optimal value of $T_1$?
 
+<span style="color: blue;">**The optimal value of $T_1$ is 32.64047.**
+</span>
+
+
 ```{r}
 obj_fcn_t1 <- function(choice,a,b,c,p,discount){
   
@@ -46,7 +50,7 @@ out_tree1a=nloptr(x0=10, #not sure if this is the correct x0
 
 
 
-print ( out_tree1a$solution )
+#print ( out_tree1a$solution )
 ```
 
 
@@ -54,7 +58,7 @@ print ( out_tree1a$solution )
 
 Now solve the problem for six consecutive rotations.  What are the six rotation lengths that you found?
 
-<span style="color: blue;">**Solution**
+<span style="color: blue;">**The six rotation lengths that I found were 29.318, 29.325, 29.354, 29.481, 30.040, and 32.632.**
 </span>
 
 ```{r}
@@ -96,8 +100,8 @@ out_tree1b=nloptr(x0=rep(10, period), #not sure if this is the correct x0
 
 
 
-print (round( out_tree1b$solution, 3 ))
-print(-out_tree1b$objective)
+#print (round( out_tree1b$solution, 3 ))
+#print(-out_tree1b$objective)
 
 ```
 
@@ -107,7 +111,7 @@ print(-out_tree1b$objective)
 
 Explain why $T_1$ through $T_5$ are shorter than $T_6$?
 
-<span style="color: blue;">**Solution**
+<span style="color: blue;">**$T_1$ through $T_5$ are shorter than $T_6$ because during $T_1$ through $T_5$ you still have replanting costs so you want to harvest sooner in order to be able to put those profits towards the costs of replanting. Since $T_6$ is the last rotation, there are no replanting costs so you want to wait for a longer period of time, specifically 32.632 rotations, in order to receive the max amount of benefits. You want to extract as much as possible during the 6th rotation since there are no benefits in leaving trees for the next rotation. **
 </span>
 
 <span style="color: blue;">
@@ -118,6 +122,13 @@ Explain why $T_1$ through $T_5$ are shorter than $T_6$?
 
 What happens to $T_1$ through $T_5$ when the cost of replanting the stand increases to 500? Explain. Why doesn't $T_6$ change with the higher replanting cost?
 
+<span style="color: blue;">**When cost of replanting increases to 500, $T_1$ through $T_5$ increases in rotation length in order to increase the amount of profits they receive which are then put towards paying the replanting costs. $T_6$ remains the same because there is no replanting costs in the last rotation.**
+</span>
+
+<span style="color: blue;">
+
+
+</span>
 
 ```{r}
 
@@ -138,25 +149,12 @@ print(-out_tree1d$objective)
 
 ```
 
-<span style="color: blue;">**Solution**
-</span>
-
-<span style="color: blue;">
-
-
-</span>
-
-```{r}
-
-
-```
-
 
 ### E.
 
 Compare your answer to part a (the single rotation) to $T_6$. Why are they the same?
 
-<span style="color: blue;">**Solution**
+<span style="color: blue;">**The optimal value during one rotation (part a) and during $T_6$ are both 32.632 because neither rotation length includes replanting costs. Therefore, you want to wait as long as possible to harvest, depending on the given parameters, in order to receive the maximum benefits or profits. **
 </span>
 
 <span style="color: blue;">
@@ -168,6 +166,14 @@ Compare your answer to part a (the single rotation) to $T_6$. Why are they the s
 ### F
 
 Now solve for the optimal rotation when an infinite number of rotations are done.  Compute the present value of net revenues (i.e., $objective).  Compare this to the present value of net revenues when only six rotations are done.  Are they close in magnitude?  Why?
+
+<span style="color: blue;">**When an infinite number of rotations are done, the present value of net revenues is 1286.727. When six rotations are done, the PVNR is 1286.552. These values are so close in magnitude because  **
+</span>
+
+<span style="color: blue;">
+
+
+</span>
 ```{r}
 obj_fcn_t_infinite <- function(choice,a,b,c,p,discount){
 
@@ -188,10 +194,8 @@ out_tree1f=nloptr(x0=10, #not sure if this is the correct x0
 
 
 
-print (round( out_tree1f$solution, 3 ))
-print(-out_tree1f$objective)
-
-#do you need a loop??
+#print (round( out_tree1f$solution, 3 ))
+#print(-out_tree1f$objective)
 ```
 
 
@@ -204,7 +208,7 @@ In this problem, you are asked to find the optimal rotation when the initial age
 	
 If the stand is grown for an infinite number of rotations, what is the optimal rotation length when the initial age of the stand is zero?  Call this value $T^*$.  What is the present discounted value of net timber revenues from an infinite number of rotations?  Call this value $\pi_\infty$.
 
-<span style="color: blue;">**Solution**</span>
+<span style="color: blue;">**The optimal rotation length is when the initial age of the stand is zero is $T^*$ = 60.13825. The present discounted value of net timeber revenues from an infinite number of rotations is $\pi_\infty$ = 837.6664. **</span>
 
 
 
@@ -230,8 +234,8 @@ out_tree2a=nloptr(x0=10,
 
 
 
-print ( out_tree2a$solution )
-print(-out_tree2a$objective)
+#print ( out_tree2a$solution )
+#print(-out_tree2a$objective)
 ```
 
 
@@ -240,12 +244,12 @@ print(-out_tree2a$objective)
 
 Suppose that the initial age of the stand is A and $T_1$ is the additional number of years the stand is grown until harvest.  Then, $A+T_1$ is the age of the stand at the end of the first rotation. Assuming the first rotation is followed by an infinite number of rotations, write an expression for present discounted value of net timber revenues from an infinite number of rotations (including the first one).
 
-<span style="color: blue;">**Solution**</span>
+<span style="color: blue;">**In code!**</span>
 ```{r}
 obj_fcn_npv <- function(choice,A,a,b,c,p,discount){
   
   Q=(exp(a-b/(A + choice)))
-  npv = (p*Q*exp(-discount*choice) + 60.13825 * exp(-discount * choice))
+  npv = ((p*Q*exp(-discount*choice)-c) + 60.13825 * exp(-discount * choice))
   
   return(-npv)
   
@@ -259,11 +263,12 @@ obj_fcn_npv <- function(choice,A,a,b,c,p,discount){
 
 Using your formula in b, and assuming A=30, what is the optimal value of $T_1$? How does your answer change when A=40?  A=60.14?  A=90?  Make a table showing your results.
 
-<span style="color: blue;">**Solution**</span>
+<span style="color: blue;">**See table!**</span>
 
 
 
 ```{r}
+
 options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
 
 out_tree2c=nloptr(x0=10, #not sure if this is the correct x0
@@ -274,8 +279,64 @@ out_tree2c=nloptr(x0=10, #not sure if this is the correct x0
 
 
 
-print (round( out_tree2c$solution, 3 ))
-print(-out_tree2c$objective)
+#print (round( out_tree2c$solution, 3 ))
+#print(-out_tree2c$objective)
+```
+
+```{r}
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_tree2c.1=nloptr(x0=10, #not sure if this is the correct x0
+          eval_f=obj_fcn_npv,
+          lb=0,
+          opts = options,
+          discount=0.05,a=13,b=185,c=1000,p=1.78,A=40)
+
+
+
+#print (round( out_tree2c.1$solution, 3 ))
+#print(-out_tree2c.1$objective)
+```
+
+```{r}
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_tree2c.3=nloptr(x0=10, #not sure if this is the correct x0
+          eval_f=obj_fcn_npv,
+          lb=0,
+          opts = options,
+          discount=0.05,a=13,b=185,c=1000,p=1.78,A=90)
+
+
+
+#print (round( out_tree2c.3$solution, 3 ))
+#print(-out_tree2c.3$objective)
+```
+
+```{r}
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_tree2c.2=nloptr(x0=10, #not sure if this is the correct x0
+          eval_f=obj_fcn_npv,
+          lb=0,
+          opts = options,
+          discount=0.05,a=13,b=185,c=1000,p=1.78,A=60.14)
+
+
+
+#print (round( out_tree2c.2$solution, 3 ))
+#print(-out_tree2c.2$objective)
+```
+
+```{r}
+# make table 
+
+age <- c(30, 40, 60.14, 90)
+optimal_value <- c(30.779, 20.779, 0.639, 0)
+
+table <- data_frame("Age" = age, "Optimal Harvest Time" = optimal_value)
+
+kable(table)
 
 ```
 
@@ -283,7 +344,11 @@ print(-out_tree2c$objective)
 
 What do you notice about $A+T_1$?  Explain.
 
-<span style="color: blue;">**Solution**</span>
+<span style="color: blue;">** When the initial age of the tree stand increases, the optimal value of harvest decreases. When the initial age of the stand is 0, you have to wait longer to harvest, specifically until you reach the optimal rotation length which was calculated to be 60.13825 during an infinite number of rotations. When the age of the stand is set to 30 or 40, you still have to wait between 30.779
+to 20.779 rotation lengths to harvest since that is when they would reach the optimal rotation length. When tree age reaches 60.14, you have reached optimal rotation length so the optimal value is very small because you need to harvest as soon as possible. Lastly, when age is 90, the optimal time of harvest is 0 becasue you have passed the optimal rotation length of 60.13825.**
+</span>
+
+
 
 
 
