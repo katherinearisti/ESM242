@@ -167,7 +167,7 @@ Compare your answer to part a (the single rotation) to $T_6$. Why are they the s
 
 Now solve for the optimal rotation when an infinite number of rotations are done.  Compute the present value of net revenues (i.e., $objective).  Compare this to the present value of net revenues when only six rotations are done.  Are they close in magnitude?  Why?
 
-<span style="color: blue;">**When an infinite number of rotations are done, the present value of net revenues is 1286.727. When six rotations are done, the PVNR is 1286.552. These values are so close in magnitude because  **
+<span style="color: blue;">**When an infinite number of rotations are done, the present value of net revenues is 1286.727. When six rotations are done, the PVNR is 1286.552. These values are so close in magnitude because in both cases you are exhausting the same amount of resources and therefore getting the same present value of net revenues. The exhaustion of resources is just happening at different rates, so you are reaching the PVNR in six rotations versus an infinite number of them.**
 </span>
 
 <span style="color: blue;">
@@ -344,9 +344,8 @@ kable(table)
 
 What do you notice about $A+T_1$?  Explain.
 
-<span style="color: blue;">** When the initial age of the tree stand increases, the optimal value of harvest decreases. When the initial age of the stand is 0, you have to wait longer to harvest, specifically until you reach the optimal rotation length which was calculated to be 60.13825 during an infinite number of rotations. When the age of the stand is set to 30 or 40, you still have to wait between 30.779
-to 20.779 rotation lengths to harvest since that is when they would reach the optimal rotation length. When tree age reaches 60.14, you have reached optimal rotation length so the optimal value is very small because you need to harvest as soon as possible. Lastly, when age is 90, the optimal time of harvest is 0 becasue you have passed the optimal rotation length of 60.13825.**
-</span>
+<span style="color: blue;">**When the initial age of the tree stand increases, the optimal value of harvest decreases. When the initial age of the stand is 0, you have to wait longer to harvest, specifically until you reach the optimal rotation length which was calculated to be 60.13825 during an infinite number of rotations. When the age of the stand is set to 30 or 40, you still have to wait between 30.779
+to 20.779 rotation lengths to harvest since that is when they would reach the optimal rotation length. When tree age reaches 60.14, you have reached optimal rotation length so the optimal value is very small because you need to harvest as soon as possible. Lastly, when age is 90, the optimal time of harvest is 0 becasue you have passed the optimal rotation length of 60.13825.**</span>
 
 
 

@@ -607,7 +607,9 @@ six rotations are done. Are they close in magnitude? Why?</p>
 <p><span style="color: blue;"><strong>When an infinite number of
 rotations are done, the present value of net revenues is 1286.727. When
 six rotations are done, the PVNR is 1286.552. These values are so close
-in magnitude because </strong> </span></p>
+in magnitude because in both cases you are exhausting the same amount of
+resources and therefore getting the same present value of net revenues.
+</strong> </span></p>
 <p><span style="color: blue;"></p>
 <p></span></p>
 <pre class="r"><code>obj_fcn_t_infinite &lt;- function(choice,a,b,c,p,discount){
@@ -629,10 +631,8 @@ out_tree1f=nloptr(x0=10, #not sure if this is the correct x0
 
 
 
-print (round( out_tree1f$solution, 3 ))</code></pre>
-<pre><code>## [1] 29.316</code></pre>
-<pre class="r"><code>print(-out_tree1f$objective)</code></pre>
-<pre><code>## [1] 1286.727</code></pre>
+#print (round( out_tree1f$solution, 3 ))
+#print(-out_tree1f$objective)</code></pre>
 </div>
 </div>
 <div id="question-2-varying-initial-age" class="section level2 tabset">
@@ -653,7 +653,11 @@ the optimal rotation length when the initial age of the stand is zero?
 Call this value <span class="math inline">\(T^*\)</span>. What is the
 present discounted value of net timber revenues from an infinite number
 of rotations? Call this value <span class="math inline">\(\pi_\infty\)</span>.</p>
-<p><span style="color: blue;"><strong>Solution</strong></span></p>
+<p><span style="color: blue;"><strong>The optimal rotation length is
+when the initial age of the stand is zero is <span class="math inline">\(T^*\)</span> = 60.13825. The present discounted
+value of net timeber revenues from an infinite number of rotations is
+<span class="math inline">\(\pi_\infty\)</span> = 837.6664.
+</strong></span></p>
 <pre class="r"><code>obj_fcn_t_infinite2 &lt;- function(choice,A,a,b,c,p,discount){
 
   Q=(exp(a-b/(A + choice))) 
@@ -674,10 +678,8 @@ out_tree2a=nloptr(x0=10,
 
 
 
-print ( out_tree2a$solution )</code></pre>
-<pre><code>## [1] 60.13825</code></pre>
-<pre class="r"><code>print(-out_tree2a$objective)</code></pre>
-<pre><code>## [1] 837.6664</code></pre>
+#print ( out_tree2a$solution )
+#print(-out_tree2a$objective)</code></pre>
 </div>
 <div id="b.-1" class="section level3">
 <h3>B.</h3>
@@ -687,7 +689,7 @@ of the first rotation. Assuming the first rotation is followed by an
 infinite number of rotations, write an expression for present discounted
 value of net timber revenues from an infinite number of rotations
 (including the first one).</p>
-<p><span style="color: blue;"><strong>Solution</strong></span></p>
+<p><span style="color: blue;"><strong>In code!</strong></span></p>
 <pre class="r"><code>obj_fcn_npv &lt;- function(choice,A,a,b,c,p,discount){
   
   Q=(exp(a-b/(A + choice)))
@@ -702,7 +704,7 @@ value of net timber revenues from an infinite number of rotations
 <p>Using your formula in b, and assuming A=30, what is the optimal value
 of <span class="math inline">\(T_1\)</span>? How does your answer change
 when A=40? A=60.14? A=90? Make a table showing your results.</p>
-<p><span style="color: blue;"><strong>Solution</strong></span></p>
+<p><span style="color: blue;"><strong>See table!</strong></span></p>
 <pre class="r"><code>options=list(&quot;algorithm&quot;=&quot;NLOPT_LN_COBYLA&quot;,xtol_rel=1e-15,maxeval=16000)
 
 out_tree2c=nloptr(x0=10, #not sure if this is the correct x0
@@ -756,14 +758,14 @@ out_tree2c.2=nloptr(x0=10, #not sure if this is the correct x0
 age &lt;- c(30, 40, 60.14, 90)
 optimal_value &lt;- c(30.779, 20.779, 0.639, 0)
 
-table &lt;- data_frame(&quot;Age&quot; = age, &quot;Optimal Value&quot; = optimal_value)
+table &lt;- data_frame(&quot;Age&quot; = age, &quot;Optimal Harvest Time&quot; = optimal_value)
 
 kable(table)</code></pre>
 <table>
 <thead>
 <tr class="header">
 <th align="right">Age</th>
-<th align="right">Optimal Value</th>
+<th align="right">Optimal Harvest Time</th>
 </tr>
 </thead>
 <tbody>
@@ -790,7 +792,18 @@ kable(table)</code></pre>
 <h3>D.</h3>
 <p>What do you notice about <span class="math inline">\(A+T_1\)</span>?
 Explain.</p>
-<p><span style="color: blue;"><strong>Solution</strong></span></p>
+<p><span style="color: blue;">** When the initial age of the tree stand
+increases, the optimal value of harvest decreases. When the initial age
+of the stand is 0, you have to wait longer to harvest, specifically
+until you reach the optimal rotation length which was calculated to be
+60.13825 during an infinite number of rotations. When the age of the
+stand is set to 30 or 40, you still have to wait between 30.779 to
+20.779 rotation lengths to harvest since that is when they would reach
+the optimal rotation length. When tree age reaches 60.14, you have
+reached optimal rotation length so the optimal value is very small
+because you need to harvest as soon as possible. Lastly, when age is 90,
+the optimal time of harvest is 0 becasue you have passed the optimal
+rotation length of 60.13825.** </span></p>
 </div>
 </div>
 
