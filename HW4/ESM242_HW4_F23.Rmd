@@ -32,37 +32,42 @@ List the values of $t$, $p_t$, $q_t$, $R_t$, and  $\pi_t$ in a table below.  Wha
 ```{r}
 exhaust <- function( T, a, b, delta, R0){
   
-  p <- vector(mode="numeric", length = length(t))
-  q <- vector(mode="numeric", length = length(t))
-  R <- vector(mode="numeric", length = length(t))
-  pi <- vector(mode="numeric", length = length(t))
+  t=seq(0,T)
   
-  pi[T+1] = a
-  R[1] = R0
+  price <- vector(mode="numeric", length = length(t))
+  quantity <- vector(mode="numeric", length = length(t))
+  reserves <- vector(mode="numeric", length = length(t))
+  profits <- vector(mode="numeric", length = length(t))
+  
+  price[T+1] = a
+  reserves[1] = R0
   
   for(i in (T + 1):2){
     
-    q[i] = (a-p)/b 
-    p[i-1] = a - b*q
+    quantity[i] = (a-price[i])/b 
+    price[i-1] = a - b*quantity[i]
   }
     
-  q[1] = (a-p)/b
-  R[1] = R0
-  pi[1] = p[1] * q[1]
+  quantity[1] = (a-price[1])/b
+  #reserves[1] = R0
+  profits[1] = price[1] * quantity[1]
+  #price[1] = a-b*quantity[1] #is this needed??
+  #price[1] = a/(1+delta)
   
-  for(k in 2:(T+1)){
+  for(i in 2:(T+1)){
     
-    R[k] = R[k-1] 
-    pi[k] = 1/(1+delta) * p[k] * q[k]
+    reserves[i] = reserves[i-1] - quantity[i-1] #do you add or subtract?
+    profits[i] = 1/(1+delta) * price[i] * quantity[i]
+    #price[i] = a/(1+delta) #not sure if this is right
     
-    return(data.frame("Price" = a, "Time" = T, "Profits" = q, "Reserves" = R)) #t, p, q, R, and pi
   }
+  
+  return(data.frame("Time" = t, "Price"=price, "Quantity"=quantity, "Reserves" = reserves, "Profits" = profits)) #t, p, q, R, and pi, do you need to define T?
   
 }
 
-table1a <- exhaust(T= 1, a= 40, b= 1, delta = 0.05, R0= 778.1259)
-
-kable(table1a)
+table1a <- exhaust(T= 10, a= 40, b= 1, delta = 0.05, R0= 778.1259)
+table1a
 ```
 
 
