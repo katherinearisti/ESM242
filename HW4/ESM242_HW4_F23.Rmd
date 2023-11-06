@@ -1,0 +1,123 @@
+---
+title: "HW 4"
+author: "Andrew Plantinga"
+date: "2023-10-31"
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(nloptr)
+library(knitr)
+```
+
+
+## Exhaustible Resource Extraction {.tabset}
+
+
+Suppose there is an exhaustible resource that is costlessly extracted.  The inverse demand curve for the resource is  $p_t=a-bq_t$ where $q_t$ is the quantity extracted in time t and a=40, b=1.  The discount rate is $\delta=0.05$  and the initial stock of reserves is $R_0$ = 778.1259 units.  Set up a program to find the competitive market equilibrium and show the equilibrium values of $p_t$, $q_t$, $R_t$, and  $\pi_t$ in a table.  $R_t$ is the reserves remaining in year t and $\pi_t$ is the discounted profits in each year (without costs, they are just equal to $\rho^tp_tq_t$ ). [Hint: it is easiest to start with the price in the last period and work backwards through time.]
+
+### A. 
+
+List the values of $t$, $p_t$, $q_t$, $R_t$, and  $\pi_t$ in a table below.  What should be the final (year T) values of $p_T$ and $R_T$? Why?  Does the resource get more scarce over time?  What is your evidence?
+
+<span style="color: blue;">**Solution**</span>
+
+```{r}
+exhaust <- function( T, a, b, delta, R0){
+  
+  p <- vector(mode="numeric", length = length(t))
+  q <- vector(mode="numeric", length = length(t))
+  R <- vector(mode="numeric", length = length(t))
+  pi <- vector(mode="numeric", length = length(t))
+  
+  pi[T+1] = a
+  R[1] = R0
+  
+  for(i in (T + 1):2){
+    
+    q[i] = (a-p)/b 
+    p[i-1] = a - b*q
+  }
+    
+  q[1] = (a-p)/b
+  R[1] = R0
+  pi[1] = p[1] * q[1]
+  
+  for(k in 2:(T+1)){
+    
+    R[k] = R[k-1] 
+    pi[k] = 1/(1+delta) * p[k] * q[k]
+    
+    return(data.frame("Price" = a, "Time" = T, "Profits" = q, "Reserves" = R)) #t, p, q, R, and pi
+  }
+  
+}
+
+table1a <- exhaust(T= 1, a= 40, b= 1, delta = 0.05, R0= 778.1259)
+
+kable(table1a)
+```
+
+
+
+
+### B.
+
+Now consider extensions of the model in A.  First, assume there is a constant marginal cost of extraction c = 3.178025.  The discount profits in each year are now $\pi_t=\rho^t (p_t-c)q_t$.  Second, assume marginal costs are zero again but the initial stock of reserves increases to $R_0$ = 948.2253 units.  Third, assume marginal costs are still zero and reserves go back to $R_0$=778.1259, but the demand curve parameters are now $a$=40, $b$=0.75194.  A lower value of $b$ means that the demand curve rotates outward around $a$=40. 
+
+List the values of $t$, $p_t$, $q_t$, $R_t$, and  $\pi_t$ for the three cases. 
+
+
+<span style="color: blue;">**Solution**</span>
+
+<span style="color: blue;">
+
+</span>
+
+```{r}
+
+```
+
+
+### C.
+
+
+What is the final year $T$ for the three cases? Explain why they are different from part A.
+
+<span style="color: blue;">**Solution**</span>
+
+
+<span style="color: blue;">
+
+</span>
+
+### D. 
+
+Compare the path of prices in the three cases to that in part A. Explain the differences.
+
+<span style="color: blue;">**Solution**</span>
+
+<span style="color: blue;">
+
+</span>
+
+
+### E.
+
+What happens to the present discounted value of profits (in other words, the value of the reserves $R_0$) in the three cases compared to part A? Explain the differences.
+
+<span style="color: blue;">**Solution**</span>
+
+<span style="color: blue;">
+
+</span>
+
+
+
