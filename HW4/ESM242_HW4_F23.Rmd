@@ -49,20 +49,16 @@ exhaust <- function( T, a, b, c, delta, R0){
   }
     
   quantity[1] = (a-price[1])/b
-  #reserves[1] = R0
   profits[1] = price[1] * quantity[1]
-  #price[1] = a-b*quantity[1] #is this needed??
-  #price[1] = a/(1+delta)
   
   for(i in 2:(T+1)){
     
-    reserves[i] = reserves[i-1] - quantity[i-1] #do you add or subtract?
+    reserves[i] = reserves[i-1] - quantity[i-1] 
     profits[i] = 1/(1+delta) * price[i] * quantity[i]
-    #price[i] = a/(1+delta) #not sure if this is right
     
   }
   
-  return(data.frame("Time" = t, "Price"=price, "Quantity"=quantity, "Reserves" = reserves, "Profits" = profits)) #t, p, q, R, and pi, do you need to define T?
+  return(data.frame("Time" = t, "Price"=price, "Quantity"=quantity, "Reserves" = reserves, "Profits" = profits)) 
   
 }
 
@@ -86,8 +82,52 @@ List the values of $t$, $p_t$, $q_t$, $R_t$, and  $\pi_t$ for the three cases.
 
 </span>
 
+Case 1:
 ```{r}
+exhaust_case1 <- function( T, a, b, c, delta, R0){
+  
+  t=seq(0,T)
+  
+  price <- vector(mode="numeric", length = length(t))
+  quantity <- vector(mode="numeric", length = length(t))
+  reserves <- vector(mode="numeric", length = length(t))
+  profits <- vector(mode="numeric", length = length(t))
+  
+  price[T+1] = a
+  reserves[1] = R0
+  
+  for(i in (T + 1):2){
+    
+    quantity[i] = (a-price[i])/b 
+    price[i-1] = (price[i] + c*delta)/(1+delta)
+  }
+    
+  quantity[1] = (a-price[1])/b
+  profits[1] = price[1] * quantity[1] #does this equation need to be changed to the one above?
+  
+  for(i in 2:(T+1)){
+    
+    reserves[i] = reserves[i-1] - quantity[i-1] 
+    profits[i] = 1/(1+delta) * price[i] * quantity[i]
+    
+  }
+  
+  return(data.frame("Time" = t, "Price"=price, "Quantity"=quantity, "Reserves" = reserves, "Profits" = profits)) 
+  
+}
 
+table1b_case1 <- exhaust_case1(T= 38, a= 40, b= 1, delta = 0.05, R0= 778.1259, c=3.178025)
+table1b_case1
+```
+Case 2: 
+```{r}
+table1b_case2 <- exhaust_case1(T= 41, a= 40, b= 1, delta = 0.05, R0= 948.2253, c=0)
+table1b_case2
+```
+Case 3: 
+```{r}
+table1b_case3 <- exhaust_case1(T= 30, a= 40, b= 0.75194, delta = 0.05, R0= 778.1259, c=0)
+table1b_case3
 ```
 
 
