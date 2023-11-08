@@ -155,7 +155,7 @@ kable(one_c)
 
 Compare the path of prices in the three cases to that in part A. Explain the differences.
 
-<span style="color: blue;">**Prices in Case 1 are at a higher value than in part A. This is due to cost now being incorporated into the price **</span>
+<span style="color: blue;">**Solution **</span>
 
 <span style="color: blue;">
 
