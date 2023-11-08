@@ -46,6 +46,7 @@ exhaust <- function( T, a, b, c, delta, R0){
     
     quantity[i] = (a-price[i])/b 
     price[i-1] = (price[i] + c*delta)/(1+delta)
+  
   }
     
   quantity[1] = (a-price[1])/b
@@ -63,7 +64,7 @@ exhaust <- function( T, a, b, c, delta, R0){
 }
 
 table1a <- exhaust(T= 36, a= 40, b= 1, delta = 0.05, R0= 778.1259, c=0)
-table1a
+kable(table1a)
 ```
 
 
@@ -103,12 +104,12 @@ exhaust_case1 <- function( T, a, b, c, delta, R0){
   }
     
   quantity[1] = (a-price[1])/b
-  profits[1] = price[1] * quantity[1] #does this equation need to be changed to the one above?
+  profits[1] =  delta^t * (price[1] - c) * quantity[1]
   
   for(i in 2:(T+1)){
     
     reserves[i] = reserves[i-1] - quantity[i-1] 
-    profits[i] = 1/(1+delta) * price[i] * quantity[i]
+    profits[i] = delta^t * price[i] * quantity[i]
     
   }
   
@@ -117,17 +118,17 @@ exhaust_case1 <- function( T, a, b, c, delta, R0){
 }
 
 table1b_case1 <- exhaust_case1(T= 38, a= 40, b= 1, delta = 0.05, R0= 778.1259, c=3.178025)
-table1b_case1
+kable(table1b_case1)
 ```
 Case 2: 
 ```{r}
 table1b_case2 <- exhaust_case1(T= 41, a= 40, b= 1, delta = 0.05, R0= 948.2253, c=0)
-table1b_case2
+kable(table1b_case2)
 ```
 Case 3: 
 ```{r}
 table1b_case3 <- exhaust_case1(T= 30, a= 40, b= 0.75194, delta = 0.05, R0= 778.1259, c=0)
-table1b_case3
+kable(table1b_case3)
 ```
 
 
@@ -136,7 +137,7 @@ table1b_case3
 
 What is the final year $T$ for the three cases? Explain why they are different from part A.
 
-<span style="color: blue;">**Solution**</span>
+<span style="color: blue;">**The final T for Case One is T=38, Case Two T=41, and Case Three T=30. They are different from part A due to the change in parameters. Beginning with the change of cost in Case 1 which caused time to increase slightly from 36 to 38. This increase in cost caused both profits and prices to increase in number therefore causing reserves to decrease at a slightly slower rate than seen in part A. When costs are higher there is an incentive to push costs off to the future and therefore increase the time it takes for reserves to reach 0. In Case 2, T increases to 41 due to an increase in the amount of reserves, therefore it takes longer to reach 0 reserves. In Case 3, T decreases to 30 due to b decreasing to 0.75194. When the demand is decreased, initial price increases, so in order to ensure that you maintain the same amount of reserves your T curve (the northeast quadrant) has to become steeper. **</span>
 
 
 <span style="color: blue;">
@@ -147,7 +148,7 @@ What is the final year $T$ for the three cases? Explain why they are different f
 
 Compare the path of prices in the three cases to that in part A. Explain the differences.
 
-<span style="color: blue;">**Solution**</span>
+<span style="color: blue;">**Prices in Case 1 are at a higher value than in part A. This is due to cost now being incorporated into the price **</span>
 
 <span style="color: blue;">
 
