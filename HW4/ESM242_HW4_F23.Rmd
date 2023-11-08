@@ -1,7 +1,7 @@
 ---
 title: "HW 4"
-author: "Andrew Plantinga"
-date: "2023-10-31"
+author: "Kat Aristi"
+date: "2023-11-8"
 output:
   html_document:
     code_folding: hide
@@ -30,7 +30,7 @@ List the values of $t$, $p_t$, $q_t$, $R_t$, and  $\pi_t$ in a table below.  Wha
 <span style="color: blue;">**Solution**</span>
 
 ```{r}
-exhaust <- function( T, a, b, delta, R0){
+exhaust <- function( T, a, b, c, delta, R0){
   
   t=seq(0,T)
   
@@ -45,7 +45,7 @@ exhaust <- function( T, a, b, delta, R0){
   for(i in (T + 1):2){
     
     quantity[i] = (a-price[i])/b 
-    price[i-1] = a - b*quantity[i]
+    price[i-1] = (price[i] + c*delta)/(1+delta)
   }
     
   quantity[1] = (a-price[1])/b
@@ -66,7 +66,7 @@ exhaust <- function( T, a, b, delta, R0){
   
 }
 
-table1a <- exhaust(T= 10, a= 40, b= 1, delta = 0.05, R0= 778.1259)
+table1a <- exhaust(T= 36, a= 40, b= 1, delta = 0.05, R0= 778.1259, c=0)
 table1a
 ```
 
