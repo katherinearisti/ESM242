@@ -27,7 +27,8 @@ Suppose there is an exhaustible resource that is costlessly extracted.  The inve
 
 List the values of $t$, $p_t$, $q_t$, $R_t$, and  $\pi_t$ in a table below.  What should be the final (year T) values of $p_T$ and $R_T$? Why?  Does the resource get more scarce over time?  What is your evidence?
 
-<span style="color: blue;">**Solution**</span>
+<span style="color: blue;">**In the final year T=36, $p_t$=40, and $R_t$=0. Since these reserves contain an exhaustible resource, they will eventually end up being depleted and reach 0, which in this case occurs at year 36 due to the current set parameters. Therefore, the reserves and quantity slowly decrease as time increases. When reserves and quantity reach 0, profits will also be 0 since there is nothing left to make money off of. **</span>
+**</span>
 
 ```{r}
 exhaust <- function( T, a, b, c, delta, R0){
@@ -155,7 +156,7 @@ kable(one_c)
 
 Compare the path of prices in the three cases to that in part A. Explain the differences.
 
-<span style="color: blue;">**Solution **</span>
+<span style="color: blue;">**The price paths of the three cases are either decreasing at a faster or slower rate than the price path in part A. The price path of part A is between that of case 1 and 2 due to the amount of time it takes for the price to reach 0, or when there are 0 reserves (as seen in the graphs below). Case 3 has the longest price path due to having the longest amount of time for reserves to reach 0. The changes in the price paths between the three cases and that in part A can possibly be changed by either addign costs or increasing reserves. This will change the amount of time it takes these prices to go from 40 to 0.   **</span>
 
 <span style="color: blue;">
 
@@ -174,12 +175,25 @@ plot(table1a$Quantity, table1a$Price)
 
 What happens to the present discounted value of profits (in other words, the value of the reserves $R_0$) in the three cases compared to part A? Explain the differences.
 
-<span style="color: blue;">**Across all cases, the profits are increasing, especially when compared to part A. PVNB for Case 1 and 2 are the slightly larger than part A due to the time spans being longer, which allows for a longer amount of time for the profits to increase. Case 3 is the largest because the initial price is the largest, thereofre causing profits to increase.**</span>
-
+<span style="color: blue;">**Across all cases, the profits are increasing. The cases have some profit when initially starting in time 0 due to the fact that there are already exhaustible resources in the reserve that are ready to be extracted and sold. PVNB for Case 1 and 2 are the slightly larger than part A due to the time spans being longer, which allows for a longer amount of time for the profits to increase. Case 3 is the largest because the initial price is the largest causing profits to increase. As the profits decrease, they decrease at a much sharper rate than they increase due to the because the exhaustible resource cannot renew itself so is growing smaller at a fast rate. This is further seen as an increase in prices in an attempt to increase profits, but the reserves continue to decline.  **</span>
 
 <span style="color: blue;">
 
 </span>
 
+```{r}
+c1 <- sum(table1b_case1$Profits)
+c2 <- sum(table1b_case2$Profits)
+c3 <- sum(table1b_case3$Profits)
+
+question1a <- sum(table1a$Profits)
+
+number <- c("1A", 'Case 1', 'Case 2', 'Case 3')
+PVNB <- c(question1a, c1, c2, c3)
+
+question1e <- data.frame("Case" = number, 'PVNB' = PVNB)
+
+kable(question1e)
+```
 
 
