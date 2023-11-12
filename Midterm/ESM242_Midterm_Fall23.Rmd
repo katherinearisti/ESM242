@@ -1,6 +1,6 @@
 ---
 title: "ESM 242 Midterm Exam"
-author: "This exam is due by 11:59 pm on Wednesday, November 15.  You may use class notes and previous homeworks to do this exam, but you may not discuss the exam with anybody.  Please contact me if you have any questions."
+author: "Kat Aristi"
 output: 
   html_document:
     code_folding: hide
@@ -34,16 +34,30 @@ Suppose the yield functions for stand 1 and 2 are, respectively, $Q(T_1)=e^{a-b/
 
 Using NLoptR and the parameter values given above, what is the optimal rotation length for stand 1 ( $T_1^*$) when the stand is grown for an infinite number of rotations?
 
-<span style="color: blue;">**Solution**</span>
+<span style="color: blue;">**The optimal rotation length for stand 1 is 48.25787.**</span>
 
 
 
 ```{r}
+obj_fcn_infinite_1a <- function(choice,a,b,c,p,discount){
 
+  Q=exp(a-b/choice)
+  benefits = (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
+  
+  return(-benefits)
+  
+}
 
-#options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
 
+out_tree1a=nloptr(x0=10,
+          eval_f=obj_fcn_infinite_1a,
+          lb=0,
+          opts = options,
+          discount=0.03,a=10,b=90,c=125,p=2.5)
 
+#print ( out_tree1a$solution )
+#print(-out_tree1a$objective)
 
 ```
 
@@ -59,11 +73,52 @@ Holding the rotation for stand 1 at the value of $T_1^*$  found in a, what are t
 
 
 ```{r}
+obj_fcn_infinite_1b <- function(choice,a,b,c,p,d,discount){
+  
+  Q=exp(a-b/choice + d*48.25787)
+  benefits = (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
+  
+  return(-benefits)
+}
 
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
 
+out_tree1b=nloptr(x0=10,
+          eval_f=obj_fcn_infinite_1b,
+          lb=0,
+          opts = options,
+          discount=0.03,a=10,b=90,c=125,p=2.5, d=0)
+
+print(out_tree1b$solution)
 ```
 
+```{r}
+out_tree1bb=nloptr(x0=10,
+          eval_f=obj_fcn_infinite_1b,
+          lb=0,
+          opts = options,
+          discount=0.03,a=10,b=90,c=125,p=2.5, d=-0.03)
 
+print(out_tree1bb$solution)
+```
+
+```{r}
+out_tree1bc=nloptr(x0=10,
+          eval_f=obj_fcn_infinite_1b,
+          lb=0,
+          opts = options,
+          discount=0.03,a=10,b=90,c=125,p=2.5, d=0.1)
+
+print(out_tree1bc$solution)
+```
+```{r}
+d <- c(0, -0.03, 0.1)
+rotation <- c(48.25787, 49.70415, 47.80502)
+
+question1b <- data_frame("D" = d, "Rotation Length" = rotation)
+
+kable(question1b)
+```
 
 
 ### C.
