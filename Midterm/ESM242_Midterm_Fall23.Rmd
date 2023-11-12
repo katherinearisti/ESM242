@@ -75,7 +75,7 @@ Holding the rotation for stand 1 at the value of $T_1^*$  found in a, what are t
 ```{r}
 obj_fcn_infinite_1b <- function(choice,a,b,c,p,d,discount){
   
-  Q=exp(a-b/choice + d*48.25787)
+  Q=exp((a-(b/choice)) + (d*48.25787)) #ask about parantheses
   benefits = (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
   return(-benefits)
@@ -89,7 +89,7 @@ out_tree1b=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5, d=0)
 
-print(out_tree1b$solution)
+#print(out_tree1b$solution)
 ```
 
 ```{r}
@@ -99,7 +99,7 @@ out_tree1bb=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5, d=-0.03)
 
-print(out_tree1bb$solution)
+#print(out_tree1bb$solution)
 ```
 
 ```{r}
@@ -109,7 +109,7 @@ out_tree1bc=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5, d=0.1)
 
-print(out_tree1bc$solution)
+#print(out_tree1bc$solution)
 ```
 ```{r}
 d <- c(0, -0.03, 0.1)
