@@ -111,6 +111,7 @@ out_tree1bc=nloptr(x0=10,
 
 #print(out_tree1bc$solution)
 ```
+
 ```{r}
 d <- c(0, -0.03, 0.1)
 rotation <- c(48.25787, 49.70415, 47.80502)
@@ -152,12 +153,12 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 
 ```{r}
 period=10
-obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount, period){ #took out Z?
+obj_stock_func <- function(choice, Z0, p, a, b, gamma, alpha, discount, period){ #took out Z?
   
   state<-vector(mode="numeric",length=0)
   benefits<-vector(mode="numeric",length=0)
   
-  state[1] = int_state #would initial state be Z0?
+  state[1] = Z0 #would initial state be Z0?
   benefits[1] = (p*choice[1] - (a*state[1] - b*state[1]^2)) #confused on which is state and which is choice, is state z and choice q? also confused on how to implement Z0 and Zt
   
   for(i in 2:(period)){
@@ -168,18 +169,18 @@ obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount, p
   }
   
   t = seq(from=0, (period))
-  pv = discount^t * benefits
+  pv = discount^t*benefits
   npv= sum(pv)
   return(-npv)
   
 }
 
-constraint_function <- function(choice, int_state, p, a, b, gamma, alpha, discount, period){
+constraint_function <- function(choice, Z0, p, a, b, gamma, alpha, discount, period){
   
   state <-vector(mode="numeric",length=0)
   const <-vector(mode="numeric",length=0)
   
-  state[1] = int_state 
+  state[1] = Z0 
   const[1] = 25
   
   for(i in 2:(period)){
@@ -197,7 +198,7 @@ local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
 options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
 
 out_2a=nloptr(x0 = rep(0, period),
-              int_state = 40, 
+              Z0 = 40, 
               eval_f = obj_stock_func,
               eval_g_eq= constraint_function,
               lb = rep(0, period),
