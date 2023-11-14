@@ -75,7 +75,7 @@ Holding the rotation for stand 1 at the value of $T_1^*$  found in a, what are t
 ```{r}
 obj_fcn_infinite_1b <- function(choice,a,b,c,p,d,discount){
   
-  Q=exp((a-(b/choice)) + (d*48.25787)) #ask about parantheses
+  Q=exp(a-(b/choice) + (d*48.25787)) #ask about parantheses
   benefits = (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
   return(-benefits)
@@ -151,27 +151,65 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 
 
 ```{r}
-
-
-
-
+obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, rho){ #took out Z?
   
+  state<-vector(mode="numeric",length=0)
+  benefits<-vector(mode="numeric",length=0)
   
- 
+  state[1] = int_state #would initial state be Z0?
+  benefits[1] = rho^t(p*choice[1] - (a*state[1] - b*state[1]^2)) #confused on which is state and which is choice, is state z and choice q? also confused on how to implement Z0 and Zt
+  
+  for(i in 2:10){
+    
+    state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
+    benefits[i] = rho^t(p*choice[i] - (a*state[i] - b*state[i]^2))
+    
+  }
+  
+  #t = seq(from=0, 10)
+  #confused on what this would be or is rho discount?
+  npv= sum(benefits)
+  return(-npv)
+  
+}
+
+constraint_function <- function(choice, int_state, p, a, b, gamma, alpha, rho){
+  
+  state <-vector(mode="numeric",length=0)
+  const <-vector(mode="numeric",length=0)
+  
+  state[1] = int_state 
+  const[1] = 25
+  
+  for(i in 2:10){
+    
+    state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
+    const[i] = 25
+    
+  }
+
+  return(const)
+}
 
 
+local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
+options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
 
-#local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
-#options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
+out_2a=nloptr(x0 = rep(0, times=10),
+              int_state = 40, 
+              eval_f = obj_stock_func,
+              eval_g_eq= constraint_function,
+              lb = rep(0,times = 10),
+              opts = options,
+              rho = 1/1.04, 
+              p=100,
+              a=2,
+              b=-0.25,
+              gamma=0.2, 
+              alpha=2
+              )
 
-#out_3a=nloptr(
-#              eval_g_eq= ,
-#              opts = options,
-              
-#              )
-
-
-
+print(out_2a$solution)
 
 ```
 
