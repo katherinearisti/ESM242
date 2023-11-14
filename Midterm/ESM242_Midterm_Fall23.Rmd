@@ -151,29 +151,30 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 
 
 ```{r}
-obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, rho){ #took out Z?
+period=10
+obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount, period){ #took out Z?
   
   state<-vector(mode="numeric",length=0)
   benefits<-vector(mode="numeric",length=0)
   
   state[1] = int_state #would initial state be Z0?
-  benefits[1] = rho^t(p*choice[1] - (a*state[1] - b*state[1]^2)) #confused on which is state and which is choice, is state z and choice q? also confused on how to implement Z0 and Zt
+  benefits[1] = (p*choice[1] - (a*state[1] - b*state[1]^2)) #confused on which is state and which is choice, is state z and choice q? also confused on how to implement Z0 and Zt
   
-  for(i in 2:10){
+  for(i in 2:(period)){
     
     state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
-    benefits[i] = rho^t(p*choice[i] - (a*state[i] - b*state[i]^2))
+    benefits[i] = (p*choice[i] - (a*state[i] - b*state[i]^2))
     
   }
   
-  #t = seq(from=0, 10)
-  #confused on what this would be or is rho discount?
-  npv= sum(benefits)
+  t = seq(from=0, (period))
+  pv = discount^t * benefits
+  npv= sum(pv)
   return(-npv)
   
 }
 
-constraint_function <- function(choice, int_state, p, a, b, gamma, alpha, rho){
+constraint_function <- function(choice, int_state, p, a, b, gamma, alpha, discount, period){
   
   state <-vector(mode="numeric",length=0)
   const <-vector(mode="numeric",length=0)
@@ -181,10 +182,10 @@ constraint_function <- function(choice, int_state, p, a, b, gamma, alpha, rho){
   state[1] = int_state 
   const[1] = 25
   
-  for(i in 2:10){
+  for(i in 2:(period)){
     
     state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
-    const[i] = 25
+    const[i] = 25 #this is wrong
     
   }
 
@@ -195,20 +196,21 @@ constraint_function <- function(choice, int_state, p, a, b, gamma, alpha, rho){
 local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
 options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
 
-out_2a=nloptr(x0 = rep(0, times=10),
+out_2a=nloptr(x0 = rep(0, period),
               int_state = 40, 
               eval_f = obj_stock_func,
               eval_g_eq= constraint_function,
-              lb = rep(0,times = 10),
+              lb = rep(0, period),
               opts = options,
-              rho = 1/1.04, 
+              discount = 1/1.04, 
               p=100,
               a=2,
               b=-0.25,
               gamma=0.2, 
-              alpha=2
+              alpha=2, period = 10
               )
 
+out_2a$solution[11] = NA
 print(out_2a$solution)
 
 ```
