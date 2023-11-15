@@ -56,7 +56,7 @@ out_tree1a=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5)
 
-#print ( out_tree1a$solution )
+print ( out_tree1a$solution )
 #print(-out_tree1a$objective)
 
 ```
@@ -89,7 +89,7 @@ out_tree1b=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5, d=0)
 
-#print(out_tree1b$solution)
+print(out_tree1b$solution)
 ```
 
 ```{r}
@@ -99,7 +99,7 @@ out_tree1bb=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5, d=-0.03)
 
-#print(out_tree1bb$solution)
+print(out_tree1bb$solution)
 ```
 
 ```{r}
@@ -109,7 +109,7 @@ out_tree1bc=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5, d=0.1)
 
-#print(out_tree1bc$solution)
+print(out_tree1bc$solution)
 ```
 
 ```{r}
@@ -152,45 +152,48 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 
 
 ```{r}
-period=10
-obj_stock_func <- function(choice, Z0, p, a, b, gamma, alpha, discount, period){ #took out Z?
+period=11
+obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount){ #took out Z?
   
-  state<-vector(mode="numeric",length=0)
-  benefits<-vector(mode="numeric",length=0)
+  state<-vector(mode="numeric", length=0)
+  benefits<-vector(mode="numeric", length=0)
   
-  state[1] = Z0 #would initial state be Z0?
-  benefits[1] = (p*choice[1] - (a*state[1] - b*state[1]^2)) #confused on which is state and which is choice, is state z and choice q? also confused on how to implement Z0 and Zt
+  state[1] = int_state
+  benefits[1] = p*choice[1]-(a*state[1]-b*state[1]^2) 
+
   
-  for(i in 2:(period)){
+  for(i in 2:11){
     
-    state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
-    benefits[i] = (p*choice[i] - (a*state[i] - b*state[i]^2))
+    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+    benefits[i]=p*choice[i]-(a*state[i]-b*state[i]^2)
     
   }
   
-  t = seq(from=0, (period))
-  pv = discount^t*benefits
-  npv= sum(pv)
+  t=seq(from=0,length.out=length(benefits))
+  pv=discount^t*benefits
+  npv=sum(pv)
   return(-npv)
   
 }
 
-constraint_function <- function(choice, Z0, p, a, b, gamma, alpha, discount, period){
+constraint_function <- function(choice, p, a, b, gamma, alpha, discount, int_state){
   
-  state <-vector(mode="numeric",length=0)
-  const <-vector(mode="numeric",length=0)
+  #state <-vector(mode="numeric",length=10)
+  #const <-vector(mode="numeric",length=10)
   
-  state[1] = Z0 
-  const[1] = 25
+  state <- numeric(length = 10)
+  constraint <-  state[11]-25
   
-  for(i in 2:(period)){
+  state[1] = int_state 
+  
+  for(i in 2:period){
     
     state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
-    const[i] = 25 #this is wrong
+    #constraint[i] = state[11]-25 
     
   }
 
-  return(const)
+  return(0)
 }
 
 
@@ -198,7 +201,7 @@ local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
 options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
 
 out_2a=nloptr(x0 = rep(0, period),
-              Z0 = 40, 
+              int_state = 40, 
               eval_f = obj_stock_func,
               eval_g_eq= constraint_function,
               lb = rep(0, period),
@@ -208,14 +211,45 @@ out_2a=nloptr(x0 = rep(0, period),
               a=2,
               b=-0.25,
               gamma=0.2, 
-              alpha=2, period = 10
+              alpha=2
               )
 
-out_2a$solution[11] = NA
 print(out_2a$solution)
+print(-out_2a$objective)
 
 ```
 
+```{r}
+stock_2a <- function(choice, int_state=40, period=10, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04){
+  
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
+  
+  state[1] = int_state
+  benefits[1] = p*choice[1]-(a*state[1]-b*state[1]^2)
+  
+  for(i in 2:length(choice)){
+    
+    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+    benefits[i]=p*choice[i]-(a*state[i]-b*state[i]^2)
+    
+  }
+  
+  t=seq(from=0,length.out=length(benefits))
+  pv=discount^t*benefits
+  npv=sum(pv)
+  data.frame("Period"=t, "PVNB"=npv, "Stock Pollution"=state, "Rate of Production of Pollutant"=choice)
+  
+}
+
+out_2a$solution[11] = NA
+
+tbl_2a=round(stock_2a(out_2a$solution),3)    
+
+
+kable(tbl_2a)
+  
+```
 
 
 
