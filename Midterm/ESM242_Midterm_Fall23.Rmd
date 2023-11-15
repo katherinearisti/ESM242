@@ -175,15 +175,13 @@ obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount, f
 
 constraint_function <- function(choice, int_state, a, b, p, gamma, alpha, discount, final_state){
   
-  state <-vector(mode="numeric",length=0)
+  state <-vector(mode="numeric",length=11)
   
   state[1] = int_state 
-  #const <- state[11]-25
   
   for(i in 2:period){
     
     state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
-    #const[i] = state[11]-25 
     
   }
   
@@ -202,7 +200,7 @@ out_2a=nloptr(x0 = rep(0.1, times=period),
               int_state = 40, 
               eval_f = obj_stock_func,
               eval_g_eq= constraint_function,
-              lb = rep(0, period),
+              lb = rep(0, times=period),
               opts = options,
               discount = 1/1.04, 
               p=100,
