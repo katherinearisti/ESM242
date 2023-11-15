@@ -56,7 +56,7 @@ out_tree1a=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5)
 
-print ( out_tree1a$solution )
+#print ( out_tree1a$solution )
 #print(-out_tree1a$objective)
 
 ```
@@ -75,7 +75,7 @@ Holding the rotation for stand 1 at the value of $T_1^*$  found in a, what are t
 ```{r}
 obj_fcn_infinite_1b <- function(choice,a,b,c,p,d,discount){
   
-  Q=exp(a-(b/choice) + (d*48.25787)) #ask about parantheses
+  Q=exp(a-(b/choice) + (d*48.25787)) 
   benefits = (p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
   return(-benefits)
@@ -89,7 +89,7 @@ out_tree1b=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5, d=0)
 
-print(out_tree1b$solution)
+#print(out_tree1b$solution)
 ```
 
 ```{r}
@@ -99,7 +99,7 @@ out_tree1bb=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5, d=-0.03)
 
-print(out_tree1bb$solution)
+#print(out_tree1bb$solution)
 ```
 
 ```{r}
@@ -109,7 +109,7 @@ out_tree1bc=nloptr(x0=10,
           opts = options,
           discount=0.03,a=10,b=90,c=125,p=2.5, d=0.1)
 
-print(out_tree1bc$solution)
+#print(out_tree1bc$solution)
 ```
 
 ```{r}
@@ -153,7 +153,175 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 
 ```{r}
 period=11
-obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount){ #took out Z?
+obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount, final_state){ 
+  
+  state <- vector(mode="numeric", length=0)
+  benefits <- vector(mode="numeric", length=0)
+  
+  state[1]=int_state
+  benefits[1]=(p*choice[1]- (a*state[1]-b*state[1]^2))
+  
+  for(i in 2:period) {
+    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+    benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2)) 
+  }
+  
+  t=seq(from=0, length.out=length(benefits))
+  pv=discount^t*benefits
+  npv=sum(pv)
+  return(-npv)
+  
+}
+
+constraint_function <- function(choice, int_state, a, b, p, gamma, alpha, discount, final_state){
+  
+  state <-vector(mode="numeric",length=0)
+  
+  state[1] = int_state 
+  #const <- state[11]-25
+  
+  for(i in 2:period){
+    
+    state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
+    #const[i] = state[11]-25 
+    
+  }
+  
+  const=state[11]-25
+  
+  return(const)
+}
+
+
+local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
+options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
+
+period = 11
+
+out_2a=nloptr(x0 = rep(0.1, times=period),
+              int_state = 40, 
+              eval_f = obj_stock_func,
+              eval_g_eq= constraint_function,
+              lb = rep(0, period),
+              opts = options,
+              discount = 1/1.04, 
+              p=100,
+              a=2,
+              b=-0.25,
+              gamma=0.2, 
+              alpha=2,
+              final_state=25
+              )
+
+#print(out_2a$solution)
+#print(-out_2a$objective)
+
+```
+
+```{r}
+period = 11
+stock_2a <- function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04, final_state=25){
+  
+  state<-vector(mode="numeric",length=0)
+  benefits<-vector(mode="numeric",length=0)
+  
+  state[1] = int_state
+  benefits[1] = p*choice[1]-(a*state[1]-b*state[1]^2)
+  
+  for(i in 2:period){
+    
+    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+    benefits[i]=p*choice[i]-(a*state[i]-b*state[i]^2)
+    
+  }
+  
+  state[11]=final_state
+  
+  t=seq(from=0, length.out=length(benefits))
+  pv=discount^t*benefits
+  data.frame("Period"=t, "PVNB"=pv, "Stock Pollution"=state, "Production of a Good"=choice)
+  
+}
+
+#out_2a$solution[11] = NA
+
+tbl_2a=round(stock_2a(out_2a$solution),2)    
+
+
+kable(tbl_2a)
+  
+```
+
+
+
+
+
+
+
+
+### B. 
+
+How does your answer to part a change when the price parameter p is raised to 150?  Explain why the optimal $q_t$ changes compared to part a.
+
+<span style="color: blue;">**Solution**
+</span>
+
+```{r}
+out_2b=nloptr(x0 = rep(0, period),
+              int_state = 40, 
+              eval_f = obj_stock_func,
+              eval_g_eq= constraint_function,
+              lb = rep(0, period),
+              opts = options,
+              discount = 1/1.04, 
+              p=150,
+              a=2,
+              b=-0.25,
+              gamma=0.2, 
+              alpha=2
+              )
+
+stock_2b <- function(choice, int_state=40, period=10, a=2, b=-0.25, p=150, alpha=2, gamma=0.2, discount=1/1.04){
+  
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
+  
+  state[1] = int_state
+  benefits[1] = p*choice[1]-(a*state[1]-b*state[1]^2)
+  
+  for(i in 2:length(choice)){
+    
+    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+    benefits[i]=p*choice[i]-(a*state[i]-b*state[i]^2)
+    
+  }
+  
+  t=seq(from=0,length.out=length(benefits))
+  pv=discount^t*benefits
+  data.frame("Period"=t, "PVNB"=pv, "Stock Pollution"=state, "Production of a Good"=choice)
+  
+}
+
+#out_2a$solution[11] = NA
+
+tbl_2b=round(stock_2a(out_2b$solution),2)    
+
+
+kable(tbl_2b)
+```
+
+
+
+### C.
+
+Set the price back to 100. How does your answer to part a change when the stabilization target is lowered to $Z_{10} =10$?  Explain the change in $q_t$.  
+
+<span style="color: blue;">**Solution**
+</span>
+
+```{r}
+period=11
+obj_stock_func_2c <- function(choice, int_state, p, a, b, gamma, alpha, discount){ 
   
   state<-vector(mode="numeric", length=0)
   benefits<-vector(mode="numeric", length=0)
@@ -176,7 +344,7 @@ obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount){ 
   
 }
 
-constraint_function <- function(choice, p, a, b, gamma, alpha, discount, int_state){
+constraint_function_2c <- function(choice, p, a, b, gamma, alpha, discount, int_state){
   
   state <-vector(mode="numeric",length=0)
   #const <-vector(mode="numeric",length=0)
@@ -184,13 +352,13 @@ constraint_function <- function(choice, p, a, b, gamma, alpha, discount, int_sta
   state[1] = int_state 
   #const <- state[11]-25
   
-  for(i in 2:length(choice)){
+  for(i in 2:length(choice-1)){
     
     state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
     #const[i] = state[11]-25 
     
   }
-  const=state[11]-25
+  const=state[11]-10
   
   return(const)
 }
@@ -199,10 +367,12 @@ constraint_function <- function(choice, p, a, b, gamma, alpha, discount, int_sta
 local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
 options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
 
-out_2a=nloptr(x0 = rep(0, period),
+period = 11
+
+out_2c=nloptr(x0 = rep(0, period),
               int_state = 40, 
-              eval_f = obj_stock_func,
-              eval_g_eq= constraint_function,
+              eval_f = obj_stock_func_2c,
+              eval_g_eq= constraint_function_2c,
               lb = rep(0, period),
               opts = options,
               discount = 1/1.04, 
@@ -213,13 +383,7 @@ out_2a=nloptr(x0 = rep(0, period),
               alpha=2
               )
 
-print(out_2a$solution)
-print(-out_2a$objective)
-
-```
-
-```{r}
-stock_2a <- function(choice, int_state=40, period=10, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04){
+stock_2c <- function(choice, int_state=40, period=10, a=2, b=-0.25, p=150, alpha=2, gamma=0.2, discount=1/1.04){
   
   state<-vector(mode="numeric",length=length(choice))
   benefits<-vector(mode="numeric",length=length(choice))
@@ -234,45 +398,19 @@ stock_2a <- function(choice, int_state=40, period=10, a=2, b=-0.25, p=100, alpha
     
   }
   
-   t=seq(from=0,length.out=length(benefits))
+  t=seq(from=0,length.out=length(benefits))
   pv=discount^t*benefits
-  data.frame("Period"=t, "PVNB"=pv, "Stock Pollution"=state, "Rate of Production of Pollutant"=choice)
+  data.frame("Period"=t, "PVNB"=pv, "Stock Pollution"=state, "Production of a Good"=choice)
   
 }
 
-out_2a$solution[11] = NA
+#out_2a$solution[11] = NA
 
-tbl_2a=round(stock_2a(out_2a$solution),3)    
+tbl_2c=round(stock_2a(out_2b$solution),2)    
 
 
-kable(tbl_2a)
-  
+kable(tbl_2c)
 ```
-
-
-
-
-
-
-
-
-### B. 
-
-How does your answer to part a change when the price parameter p is raised to 150?  Explain why the optimal $q_t$ changes compared to part a.
-
-<span style="color: blue;">**Solution**
-</span>
-
-
-
-
-### C.
-
-Set the price back to 100. How does your answer to part a change when the stabilization target is lowered to $Z_{11} =10$?  Explain the change in $q_t$.  
-
-<span style="color: blue;">**Solution**
-</span>
-
 
 
 ### D.
