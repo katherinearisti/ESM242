@@ -162,7 +162,7 @@ obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount){ 
   benefits[1] = p*choice[1]-(a*state[1]-b*state[1]^2) 
 
   
-  for(i in 2:11){
+  for(i in 2:length(choice)){
     
     state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
     benefits[i]=p*choice[i]-(a*state[i]-b*state[i]^2)
@@ -178,22 +178,21 @@ obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount){ 
 
 constraint_function <- function(choice, p, a, b, gamma, alpha, discount, int_state){
   
-  #state <-vector(mode="numeric",length=10)
-  #const <-vector(mode="numeric",length=10)
-  
-  state <- numeric(length = 10)
-  constraint <-  state[11]-25
+  state <-vector(mode="numeric",length=0)
+  #const <-vector(mode="numeric",length=0)
   
   state[1] = int_state 
+  #const <- state[11]-25
   
-  for(i in 2:period){
+  for(i in 2:length(choice)){
     
     state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
-    #constraint[i] = state[11]-25 
+    #const[i] = state[11]-25 
     
   }
-
-  return(0)
+  const=state[11]-25
+  
+  return(const)
 }
 
 
@@ -235,10 +234,9 @@ stock_2a <- function(choice, int_state=40, period=10, a=2, b=-0.25, p=100, alpha
     
   }
   
-  t=seq(from=0,length.out=length(benefits))
+   t=seq(from=0,length.out=length(benefits))
   pv=discount^t*benefits
-  npv=sum(pv)
-  data.frame("Period"=t, "PVNB"=npv, "Stock Pollution"=state, "Rate of Production of Pollutant"=choice)
+  data.frame("Period"=t, "PVNB"=pv, "Stock Pollution"=state, "Rate of Production of Pollutant"=choice)
   
 }
 
