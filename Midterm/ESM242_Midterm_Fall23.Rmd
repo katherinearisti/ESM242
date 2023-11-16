@@ -4,7 +4,7 @@ author: "Kat Aristi"
 output: 
   html_document:
     code_folding: hide
-date: '2023-11-08'
+date: '2023-11-15'
 ---
 
 ```{r setup, include=FALSE}
@@ -68,7 +68,7 @@ out_tree1a=nloptr(x0=10,
 
 Holding the rotation for stand 1 at the value of $T_1^*$  found in a, what are the optimal rotations (assume an infinite number of them) for stand 2 ($T_2^*$) for three different values of d: d=0, d=-0.03, d=0.1?  Explain the relationship between $T_2^*$ and $d$.
 
-<span style="color: blue;">**Solution**.</span>
+<span style="color: blue;"> **d is an externality that is occuring in stand 1 and effecting the rotation length of stand 2. When d=0, there is no externality occurring. When d=-0.3, rotation length in stand 2 increases and when d=0.1 stand 2s rotation length decreases.**.</span>
 
 
 
@@ -126,9 +126,7 @@ kable(question1b)
 
 What are some real-world examples of negative and positive externalities that affect the growth of neighboring stands?  Describe some policy interventions that could be used to get the owner of stand 1 to internalize the effect of her stand on stand 2.  In order words, how could policies be used to get the owner of stand 1 to reduce negative externalities or increase positive externalities?  
 
-<span style="color: blue;">**Solution**.</span>
-
-
+<span style="color: blue;">**Let's say that stand 1 is a privately owned tree stand managed for logging purposes while stand 2 is an adjacent privately owned tree stand managed for ecological conservation. An example of a negative externality could be that the logging practices in stand 1 generates run off that affects the growth of the trees in stand 2 as well as the habitat for the wildlife and biodiversity of the trees in stand 2. A potential policy intervention could be implementing regulations or standards for the logging practices occuring in stand 1. This could involve specific run off management, such as controlling the sediment and chemical run off. Stand 1 may have to retain certain vegetation in their stand to prevent the run off and stabilize the soil. An example of a positive externality could be stand 1 engaging in sustainable logging practices that enhance soil quality. These practices could be selective cutting or low impact logging that causes minimal disruption to the soil as well as leaving organic matter on the floor of the forest which improves the soil quality. This could then help improve the soil quality in stand 2 and contribute to the overall growth of the stand and ecological conservation in the stand due to the soil not being disturbed. A policy intervention that could increase this positive externality would be providing financial incentives or subsidies to the owner of stand 1 for adopting and maintaining sustainable logging practices. This could be a tax break for eco-friendly certifications.  **.</span>
 
 
 
@@ -150,75 +148,67 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 </span>
 
 
-
 ```{r}
-period=11
-obj_stock_func <- function(choice, int_state, p, a, b, gamma, alpha, discount, final_state){ 
-  
-  state <- vector(mode="numeric", length=0)
-  benefits <- vector(mode="numeric", length=0)
+obj_fcn_stock<-function(choice,int_state,a,b,gamma,p,alpha,discount){
+
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
   
   state[1]=int_state
-  benefits[1]=(p*choice[1]- (a*state[1]-b*state[1]^2))
-  
-  for(i in 2:period) {
-    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
-    benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2)) 
+  benefits[1]=p*choice[1]-(a*state[1]-b*state[1]^2)
+    
+  for(i in 2:length(choice)){
+
+  state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1] 
+  benefits[i]=p*choice[i]-(a*state[i]-b*state[i]^2)
+       
   }
   
-  t=seq(from=0, length.out=length(benefits))
+  t=seq(from=0,length.out=length(benefits))
   pv=discount^t*benefits
   npv=sum(pv)
   return(-npv)
   
 }
 
-constraint_function <- function(choice, int_state, a, b, p, gamma, alpha, discount, final_state){
+
+constraint_function <- function(choice, int_state, a, b, gamma, p, alpha, discount){
   
-  state <-vector(mode="numeric",length=11)
+  state<-vector(mode="numeric",length=period)
   
-  state[1] = int_state 
-  
-  for(i in 2:period){
-    
-    state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
-    
+  state[1] = int_state
+
+  for (i in 2:length(choice)) {
+    state[i] = state[i - 1] * (1 - gamma) + alpha * choice[i - 1]
   }
   
-  const=state[11]-25
-  
+  const = state[11] - 25
   return(const)
 }
-
+period = 11
 
 local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
 options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
+out_2a=nloptr(x0=rep(1, period),
+             eval_f = obj_fcn_stock,
+             eval_g_eq = constraint_function ,
+             opts = options,
+             lb = rep(0, period),
+             int_state = 40,
+             discount = 1/1.04,
+             a = 2,
+             b = -.25,
+             gamma = 0.2,
+             alpha = 2,
+             p = 100)
 
-period = 11
-
-out_2a=nloptr(x0 = rep(0.1, times=period),
-              int_state = 40, 
-              eval_f = obj_stock_func,
-              eval_g_eq= constraint_function,
-              lb = rep(0, times=period),
-              opts = options,
-              discount = 1/1.04, 
-              p=100,
-              a=2,
-              b=-0.25,
-              gamma=0.2, 
-              alpha=2,
-              final_state=25
-              )
-
-#print(out_2a$solution)
-#print(-out_2a$objective)
+#round(out_2a$solution, 2)
 
 ```
 
 ```{r}
 period = 11
-stock_2a <- function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04, final_state=25){
+stock_2a <- function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04){
   
   state<-vector(mode="numeric",length=0)
   benefits<-vector(mode="numeric",length=0)
@@ -233,7 +223,7 @@ stock_2a <- function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, alpha
     
   }
   
-  state[11]=final_state
+  #state[11]=final_state
   
   t=seq(from=0, length.out=length(benefits))
   pv=discount^t*benefits
@@ -250,36 +240,33 @@ kable(tbl_2a)
   
 ```
 
-
-
-
-
-
-
+I am sorry my numbers are weird :(
 
 ### B. 
 
 How does your answer to part a change when the price parameter p is raised to 150?  Explain why the optimal $q_t$ changes compared to part a.
 
-<span style="color: blue;">**Solution**
+<span style="color: blue;">**When the price parameter is raised to 150, the optimal $q_t$ should decrease. This is because it becomes more costly to produce this good and therefore more expensive to pollute. Due to this spike in cost, less of the good is produced and less pollution is emitted into the air. Price of production is lower in part a, so more goods are then produced. **
 </span>
 
 ```{r}
-out_2b=nloptr(x0 = rep(0, period),
-              int_state = 40, 
-              eval_f = obj_stock_func,
-              eval_g_eq= constraint_function,
-              lb = rep(0, period),
-              opts = options,
-              discount = 1/1.04, 
-              p=150,
-              a=2,
-              b=-0.25,
-              gamma=0.2, 
-              alpha=2
-              )
+period=11
+out_2b=nloptr(x0=rep(1, period),
+             eval_f = obj_fcn_stock,
+             eval_g_eq = constraint_function ,
+             opts = options,
+             lb = rep(0, period),
+             int_state = 40,
+             discount = 1/1.04,
+             a = 2,
+             b = -.25,
+             gamma = 0.2,
+             alpha = 2,
+             p = 150)
 
-stock_2b <- function(choice, int_state=40, period=10, a=2, b=-0.25, p=150, alpha=2, gamma=0.2, discount=1/1.04){
+#round(out_2b$solution, 2)
+
+stock_2b <- function(choice, int_state=40, period=11, a=2, b=-0.25, p=150, alpha=2, gamma=0.2, discount=1/1.04){
   
   state<-vector(mode="numeric",length=length(choice))
   benefits<-vector(mode="numeric",length=length(choice))
@@ -287,7 +274,7 @@ stock_2b <- function(choice, int_state=40, period=10, a=2, b=-0.25, p=150, alpha
   state[1] = int_state
   benefits[1] = p*choice[1]-(a*state[1]-b*state[1]^2)
   
-  for(i in 2:length(choice)){
+  for(i in 2:period){
     
     state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
     benefits[i]=p*choice[i]-(a*state[i]-b*state[i]^2)
@@ -302,7 +289,7 @@ stock_2b <- function(choice, int_state=40, period=10, a=2, b=-0.25, p=150, alpha
 
 #out_2a$solution[11] = NA
 
-tbl_2b=round(stock_2a(out_2b$solution),2)    
+tbl_2b=round(stock_2b(out_2b$solution), 2)    
 
 
 kable(tbl_2b)
@@ -314,15 +301,16 @@ kable(tbl_2b)
 
 Set the price back to 100. How does your answer to part a change when the stabilization target is lowered to $Z_{10} =10$?  Explain the change in $q_t$.  
 
-<span style="color: blue;">**Solution**
+<span style="color: blue;">**When the stabilization target is lowered to $Z_{10}=10$, there is a stricter cap being put on the amount of pollution that is being allowed to be released into the atmosphere. Since producers now need to pollute less than they were originally doing in a, less of the good is able to be produced causing $q_t$ to decrease. **
 </span>
+
 
 ```{r}
 period=11
 obj_stock_func_2c <- function(choice, int_state, p, a, b, gamma, alpha, discount){ 
   
-  state<-vector(mode="numeric", length=0)
-  benefits<-vector(mode="numeric", length=0)
+  state<-vector(mode="numeric", length=length(choice))
+  benefits<-vector(mode="numeric", length=length(choice))
   
   state[1] = int_state
   benefits[1] = p*choice[1]-(a*state[1]-b*state[1]^2) 
@@ -344,13 +332,13 @@ obj_stock_func_2c <- function(choice, int_state, p, a, b, gamma, alpha, discount
 
 constraint_function_2c <- function(choice, p, a, b, gamma, alpha, discount, int_state){
   
-  state <-vector(mode="numeric",length=0)
+  state <-vector(mode="numeric",length=period)
   #const <-vector(mode="numeric",length=0)
   
   state[1] = int_state 
   #const <- state[11]-25
   
-  for(i in 2:length(choice-1)){
+  for(i in 2:length(choice)){
     
     state[i] = state[i-1]*(1-gamma) + alpha*choice[i-1]
     #const[i] = state[11]-25 
@@ -367,7 +355,7 @@ options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_o
 
 period = 11
 
-out_2c=nloptr(x0 = rep(0, period),
+out_2c=nloptr(x0 = rep(1, period),
               int_state = 40, 
               eval_f = obj_stock_func_2c,
               eval_g_eq= constraint_function_2c,
@@ -415,6 +403,5 @@ kable(tbl_2c)
 
 Why do you think the pollution stock in period 5, $Z_5$, is virtually the same under the solutions in parts a and c?
 
-<span style="color: blue;">**Solution**
+<span style="color: blue;">**$Z_5$ in parts a and c should be the same because only the final period, T10, is being constrained. Since a and c are being constrained at different amounts in their final period, only that one should differ causing the other periods pollution stock to remain the same between the two questions. **
 </span>
-
